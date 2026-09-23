@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Auto Cloud Pro</title>
+    <title>CepteBütçe - Otomatik Senkron</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -37,7 +37,7 @@
             <div class="flex items-center space-x-2">
                 <div class="w-2.5 h-2.5 rounded-full bg-[#ccff00]"></div>
                 <span class="text-xs sm:text-sm font-extrabold tracking-wide text-white">CepteBütçe</span>
-                <span id="sync-status" class="text-[9px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">Bulut: Otomatik</span>
+                <span id="sync-status" class="text-[9px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">Bulut: Bağlanıyor</span>
             </div>
             <div class="flex items-center space-x-2.5 bg-[#18181c] px-3 py-1.5 rounded-2xl border border-zinc-800">
                 <button onclick="prevMonth()" class="w-6 h-6 rounded-xl bg-zinc-800/60 hover:bg-zinc-700 text-zinc-300 flex items-center justify-center font-bold transition text-xs">◀</button>
@@ -256,7 +256,7 @@
         ];
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v7', 'cep_butce_excel_v6', 'cep_butce_excel_v5'];
+        const keysToCheck = ['cep_butce_excel_v8', 'cep_butce_excel_v7', 'cep_butce_excel_v6'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -274,7 +274,6 @@
             transactions: defaultTransactions,
             funds: { currentBalance: 750000, principal: 750000, previousBalance: 750000 },
             pin: "",
-            syncCode: localStorage.getItem('cep_sync_code') || "ali-cengiz-butce-2026",
             lastUpdated: Date.now()
         };
 
@@ -282,47 +281,36 @@
             let bal = state.funds?.currentBalance || 750000;
             state.funds = { currentBalance: bal, principal: bal, previousBalance: bal };
         }
-        if(!state.syncCode) state.syncCode = "ali-cengiz-butce-2026";
         if(!state.lastUpdated) state.lastUpdated = Date.now();
+
+        // Sabit Ortak Bulut Adresi (Sabit Blob ID)
+        const SHARED_BLOB_ID = "ali-cengiz-ceptebutce-cloud-id";
 
         function saveState() {
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v7', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v8', JSON.stringify(state));
             pushToCloud();
         }
 
-        // Buluta Otomatik Gönderim
         async function pushToCloud() {
-            let blobId = localStorage.getItem('cep_blob_id');
             document.getElementById('sync-status').innerText = "Bulut: Kaydediliyor...";
             document.getElementById('sync-status').className = "text-[9px] px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400";
             try {
-                if (blobId) {
-                    let res = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                        body: JSON.stringify(state)
-                    });
-                    if (res.ok) {
-                        document.getElementById('sync-status').innerText = "Bulut: Otomatik Eşit";
-                        document.getElementById('sync-status').className = "text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400";
-                        return;
-                    }
-                }
-                // İlk kez kayıt oluşturuluyorsa
-                let res = await fetch('https://jsonblob.com/api/jsonBlob', {
-                    method: 'POST',
+                let res = await fetch(`https://jsonblob.com/api/jsonBlob/${SHARED_BLOB_ID}`, {
+                    method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify(state)
                 });
-                if(res.ok) {
-                    let locationHeader = res.headers.get('Location');
-                    if(locationHeader) {
-                        let newBlobId = locationHeader.split('/').pop();
-                        localStorage.setItem('cep_blob_id', newBlobId);
-                    }
-                    document.getElementById('sync-status').innerText = "Bulut: Otomatik Eşit";
+                if (res.ok) {
+                    document.getElementById('sync-status').innerText = "Bulut: Eşitlendi";
                     document.getElementById('sync-status').className = "text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400";
+                } else {
+                    // Eğer ilk kez oluşturuluyorsa POST at
+                    await fetch('https://jsonblob.com/api/jsonBlob', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: JSON.stringify(state)
+                    });
                 }
             } catch(e) {
                 document.getElementById('sync-status').innerText = "Bulut: Çevrimdışı";
@@ -330,19 +318,15 @@
             }
         }
 
-        // Arka Planda Sürekli Otomatik Kontrol (Her 5 saniyede bir)
         async function backgroundAutoSync() {
-            let blobId = localStorage.getItem('cep_blob_id');
-            if(!blobId) return;
             try {
-                let res = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`);
+                let res = await fetch(`https://jsonblob.com/api/jsonBlob/${SHARED_BLOB_ID}`);
                 if(res.ok) {
                     let cloudData = await res.json();
                     if(cloudData && cloudData.lastUpdated) {
-                        // Eğer buluttaki veri yereldekinden daha yeniyse otomatik güncelle
                         if(cloudData.lastUpdated > (state.lastUpdated || 0)) {
                             state = cloudData;
-                            localStorage.setItem('cep_butce_excel_v7', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v8', JSON.stringify(state));
                             renderView();
                             document.getElementById('sync-status').innerText = "Bulut: Güncellendi";
                             document.getElementById('sync-status').className = "text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400";
@@ -589,18 +573,9 @@
             } else if (currentTab === 'settings') {
                 container.innerHTML = `
                     <div class="max-w-xl mx-auto space-y-4">
-                        <h2 class="text-sm sm:text-lg font-bold text-white mb-2">Ayarlar & Otomatik Senkronizasyon</h2>
+                        <h2 class="text-sm sm:text-lg font-bold text-white mb-2">Ayarlar & Güvenlik</h2>
                         <div class="bg-[#18181c] border border-zinc-800/60 rounded-3xl p-5 space-y-4">
                             
-                            <div class="space-y-2.5 pb-3 border-b border-zinc-800">
-                                <span class="text-xs sm:text-sm font-bold text-white block">☁️ Bulut Senkronizasyon ID (Blob ID)</span>
-                                <p class="text-[10px] text-zinc-400">Telefonunda oluşan bu ID'yi bilgisayardaki Ayarlar kısmına yapıştırırsan iki cihaz otomatik bağlanır.</p>
-                                <div class="flex space-x-2">
-                                    <input type="text" id="setting-blob-id" value="${localStorage.getItem('cep_blob_id') || ''}" placeholder="Otomatik oluşur..." class="flex-1 bg-[#121215] border border-zinc-800 rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#ccff00]">
-                                    <button onclick="saveManualBlobId()" class="bg-[#ccff00] text-black font-bold px-3.5 py-2.5 rounded-xl text-xs">Bağla</button>
-                                </div>
-                            </div>
-
                             <div class="space-y-2.5 pb-3 border-b border-zinc-800">
                                 <span class="text-xs sm:text-sm font-bold text-white block">Uygulama Şifresi</span>
                                 <div class="flex space-x-2">
@@ -623,14 +598,6 @@
                     </div>
                 `;
             }
-        }
-
-        function saveManualBlobId() {
-            let val = document.getElementById('setting-blob-id').value.trim();
-            if(!val) { alert('Lütfen geçerli bir ID girin.'); return; }
-            localStorage.setItem('cep_blob_id', val);
-            alert('Bulut ID bağlandı! Veriler otomatik eşitleniyor.');
-            backgroundAutoSync();
         }
 
         function savePinSetting() {
@@ -797,18 +764,21 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v7');
-                localStorage.removeItem('cep_blob_id');
+                localStorage.removeItem('cep_butce_excel_v8');
                 location.reload();
             }
         }
 
-        checkLock();
-        renderView();
-        pushToCloud();
+        // İlk açılışta buluttan veriyi çek ve ekranı kur
+        async function initApp() {
+            checkLock();
+            await backgroundAutoSync();
+            renderView();
+            // Arka planda her 5 saniyede bir diğer cihazlardan gelen güncellemeleri kontrol et
+            setInterval(backgroundAutoSync, 5000);
+        }
 
-        // Her 5 saniyede bir buluttaki güncellemeleri otomatik kontrol et
-        setInterval(backgroundAutoSync, 5000);
+        initApp();
     </script>
 </body>
 </html>
