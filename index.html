@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CepteBütçe - Pro Finans</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0b0e; color: #ffffff; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .bg-pattern { background-image: radial-gradient(rgba(204, 255, 0, 0.08) 1px, transparent 1px); background-size: 20px 20px; }
+        .bg-fund-pattern { background-image: radial-gradient(rgba(139, 92, 246, 0.15) 1px, transparent 1px); background-size: 20px 20px; }
+    </style>
+</head>
+<body class="flex justify-center items-center min-h-screen bg-[#0b0b0e] p-0 sm:p-6">
+    
+    <!-- Responsive Ana Konteyner: Mobilde Tam Ekran, Bilgisayarda Şık Geniş Panel -->
+    <div class="w-full h-screen sm:h-[88vh] sm:max-w-4xl bg-[#0f0f12] sm:rounded-[32px] sm:border sm:border-zinc-800 flex flex-col relative overflow-hidden shadow-2xl">
+        
+        <!-- Şifre Kilit Ekranı -->
+        <div id="lock-screen" class="absolute inset-0 bg-[#0f0f12] z-50 flex flex-col justify-center items-center p-6 space-y-6 hidden">
+            <div class="w-16 h-16 rounded-3xl bg-[#ccff00]/10 text-[#ccff00] flex items-center justify-center text-3xl font-bold">🔒</div>
+            <div class="text-center space-y-1">
+                <h2 class="text-xl font-bold text-white">CepteBütçe Kilitli</h2>
+                <p class="text-xs text-zinc-400">Devam etmek için şifrenizi girin</p>
+            </div>
+            <div class="w-full max-w-xs space-y-3">
+                <input type="password" id="unlock-pin" placeholder="••••" maxlength="6" class="w-full bg-[#18181c] border border-zinc-800 rounded-2xl p-4 text-center text-white text-xl tracking-widest outline-none focus:border-[#ccff00]">
+                <button onclick="tryUnlock()" class="w-full bg-[#ccff00] hover:bg-[#b3e600] text-black font-bold py-4 rounded-2xl text-sm transition shadow-lg shadow-[#ccff00]/10">Giriş Yap</button>
+            </div>
+        </div>
+
+        <!-- Üst Ay Seçim Barı -->
+        <div class="px-6 pt-4 pb-3 flex justify-between items-center bg-[#0f0f12] z-20 border-b border-zinc-800/40">
+            <div class="flex items-center space-x-2">
+                <div class="w-3 h-3 rounded-full bg-[#ccff00]"></div>
+                <span class="text-sm font-extrabold tracking-wide text-white">CepteBütçe</span>
+            </div>
+            <div class="flex items-center space-x-3 bg-[#18181c] px-3.5 py-1.5 rounded-2xl border border-zinc-800">
+                <button onclick="prevMonth()" class="w-7 h-7 rounded-xl bg-zinc-800/60 hover:bg-zinc-700 text-zinc-300 flex items-center justify-center font-bold transition">◀</button>
+                <div id="month-display" class="text-xs font-extrabold text-[#ccff00] tracking-wide min-w-[95px] text-center">Eylül 2026</div>
+                <button onclick="nextMonth()" class="w-7 h-7 rounded-xl bg-zinc-800/60 hover:bg-zinc-700 text-zinc-300 flex items-center justify-center font-bold transition">▶</button>
+            </div>
+        </div>
+
+        <!-- İçerik Alanı -->
+        <div id="app-view" class="flex-1 overflow-y-auto no-scrollbar pb-28 px-5 sm:px-8 pt-6">
+            <!-- Dinamik doldurulacak -->
+        </div>
+
+        <!-- Alt Navigasyon Barı -->
+        <div class="absolute bottom-0 left-0 right-0 bg-[#121216]/95 backdrop-blur-md border-t border-zinc-800/80 px-4 py-3 flex justify-between items-center z-30 sm:rounded-b-[32px]">
+            <button onclick="changeTab('home')" id="tab-home" class="flex flex-col items-center space-y-1 text-[#ccff00] transition flex-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                <span class="text-[10px] font-semibold">Ana Sayfa</span>
+            </button>
+            <button onclick="changeTab('income')" id="tab-income" class="flex flex-col items-center space-y-1 text-zinc-500 hover:text-zinc-300 transition flex-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m0-16l-4 4m4-4l4 4"></path></svg>
+                <span class="text-[10px] font-semibold">Gelirler</span>
+            </button>
+            <button onclick="changeTab('expense')" id="tab-expense" class="flex flex-col items-center space-y-1 text-zinc-500 hover:text-zinc-300 transition flex-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20V4m0 16l-4-4m4 4l4-4"></path></svg>
+                <span class="text-[10px] font-semibold">Giderler</span>
+            </button>
+            <button onclick="changeTab('fund')" id="tab-fund" class="flex flex-col items-center space-y-1 text-zinc-500 hover:text-zinc-300 transition flex-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                <span class="text-[10px] font-medium">Fonlarım</span>
+            </button>
+            <button onclick="changeTab('settings')" id="tab-settings" class="flex flex-col items-center space-y-1 text-zinc-500 hover:text-zinc-300 transition flex-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756.2924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span class="text-[10px] font-medium">Ayarlar</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Genel İşlem Ekleme / Düzenleme Modal -->
+    <div id="modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center z-50 p-4">
+        <div class="bg-[#18181c] w-full max-w-md rounded-3xl border border-zinc-800 p-6 space-y-5 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 id="modal-title" class="text-lg font-bold text-white">İşlem Ekle</h3>
+                <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white">✕</button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs text-zinc-400 font-semibold mb-1 block">İşlem / Kalem Adı</label>
+                    <input type="text" id="m-name" placeholder="Örn: Maaş, Kira, Fon Yatırımı..." class="w-full bg-[#121215] border border-zinc-800 rounded-2xl p-4 text-white text-sm outline-none focus:border-[#ccff00]">
+                </div>
+                <div>
+                    <label class="text-xs text-zinc-400 font-semibold mb-1 block">Tutar (₺)</label>
+                    <input type="number" id="m-amount" placeholder="0.00" class="w-full bg-[#121215] border border-zinc-800 rounded-2xl p-4 text-white text-sm outline-none focus:border-[#ccff00]">
+                </div>
+                <div>
+                    <label class="text-xs text-zinc-400 font-semibold mb-1 block">Kategori / Tür</label>
+                    <select id="m-cat" class="w-full bg-[#121215] border border-zinc-800 rounded-2xl p-4 text-white text-sm outline-none focus:border-[#ccff00]">
+                        <!-- Dinamik doldurulacak -->
+                    </select>
+                </div>
+                <button onclick="saveModalData()" class="w-full bg-[#ccff00] hover:bg-[#b3e600] text-black font-bold py-4 rounded-2xl text-sm transition shadow-lg shadow-[#ccff00]/10">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fon Bakiyesini Güncelle Modal -->
+    <div id="fund-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center z-50 p-4">
+        <div class="bg-[#18181c] w-full max-w-md rounded-3xl border border-zinc-800 p-6 space-y-5 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white">Fon Bakiyesini Güncelle</h3>
+                <button onclick="closeFundModal()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white">✕</button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs text-zinc-400 font-semibold mb-1 block">Güncel Toplam Fon Bakiyesi (₺)</label>
+                    <input type="number" id="f-balance" placeholder="0.00" class="w-full bg-[#121215] border border-zinc-800 rounded-2xl p-4 text-white text-sm outline-none focus:border-[#8b5cf6]">
+                </div>
+                <button onclick="saveFundBalance()" class="w-full bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-bold py-4 rounded-2xl text-sm transition shadow-lg shadow-[#8b5cf6]/20">Bakiyeyi Güncelle</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tüm Dönem Hareketleri Yönetim Modal -->
+    <div id="log-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center z-50 p-4">
+        <div class="bg-[#18181c] w-full max-w-lg h-[580px] rounded-3xl border border-zinc-800 p-6 flex flex-col space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white">Dönem Hareketleri Yönetimi</h3>
+                <button onclick="closeLogModal()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white">✕</button>
+            </div>
+            <div>
+                <label class="text-[11px] text-zinc-400 font-semibold mb-1 block">Görüntülenecek Ay / Dönem</label>
+                <select id="modal-month-select" onchange="changeModalMonth(this.value)" class="w-full bg-[#121215] border border-zinc-800 rounded-2xl p-3 text-white text-xs outline-none focus:border-[#ccff00]">
+                    <!-- Dinamik doldurulacak -->
+                </select>
+            </div>
+            <div id="log-list" class="flex-1 overflow-y-auto no-scrollbar space-y-2.5">
+                <!-- Hareketler -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let savedData = null;
+        const keysToCheck = ['cep_butce_secure_data', 'cep_butce_secure_v32', 'cep_butce_secure_v31', 'cep_butce_secure_v30', 'cep_butce_secure_v29', 'cep_butce_secure_v28', 'cep_butce_secure_v27', 'cep_butce_secure_v26'];
+        for (let k of keysToCheck) {
+            let data = localStorage.getItem(k);
+            if (data) {
+                try {
+                    savedData = JSON.parse(data);
+                    break;
+                } catch(e){}
+            }
+        }
+
+        let defaultTransactions = [
+            { id: 1, name: "Maaş 1", amount: 35000, type: "Gelir", category: "Gelir", date: "Eylül 2026" },
+            { id: 2, name: "Maaş 2", amount: 45000, type: "Gelir", category: "Gelir", date: "Eylül 2026" },
+            { id: 3, name: "Kira", amount: 15000, type: "Gider", category: "Gider", date: "Eylül 2026" }
+        ];
+
+        let state = savedData || {
+            transactions: defaultTransactions,
+            funds: { currentBalance: 782000, basePrincipal: 750000, previousBalance: 750000 },
+            pin: ""
+        };
+
+        function saveState() {
+            localStorage.setItem('cep_butce_secure_data', JSON.stringify(state));
+        }
+
+        let currentTab = 'home';
+        let editingTxId = null;
+        let modalSelectedMonth = null;
+        let activeModalType = 'Gelir';
+        
+        const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+        let activeMonthIndex = 8; // Eylül (2026)
+        let activeYear = 2026;
+
+        function checkLock() {
+            if(state.pin && !sessionStorage.getItem('cep_unlocked')) {
+                document.getElementById('lock-screen').style.display = 'flex';
+            } else {
+                document.getElementById('lock-screen').style.display = 'none';
+            }
+        }
+
+        function tryUnlock() {
+            let val = document.getElementById('unlock-pin').value;
+            if(val === state.pin) {
+                sessionStorage.setItem('cep_unlocked', 'true');
+                document.getElementById('lock-screen').style.display = 'none';
+                document.getElementById('unlock-pin').value = '';
+            } else {
+                alert('Şifre hatalı!');
+            }
+        }
+
+        function getActiveMonthString() {
+            return `${months[activeMonthIndex]} ${activeYear}`;
+        }
+
+        function updateMonthDisplay() {
+            document.getElementById('month-display').innerText = getActiveMonthString();
+        }
+
+        function prevMonth() {
+            activeMonthIndex--;
+            if(activeMonthIndex < 0) {
+                activeMonthIndex = 11;
+                activeYear--;
+            }
+            updateMonthDisplay();
+            renderView();
+        }
+
+        function nextMonth() {
+            activeMonthIndex++;
+            if(activeMonthIndex > 11) {
+                activeMonthIndex = 0;
+                activeYear++;
+            }
+            updateMonthDisplay();
+            renderView();
+        }
+
+        function changeTab(tab) {
+            currentTab = tab;
+            ['home', 'income', 'expense', 'fund', 'settings'].forEach(t => {
+                let el = document.getElementById(`tab-${t}`);
+                if(!el) return;
+                if(t === tab) {
+                    if(t === 'income') el.className = "flex flex-col items-center space-y-1 text-[#10b981] transition flex-1";
+                    else if(t === 'expense') el.className = "flex flex-col items-center space-y-1 text-[#ef4444] transition flex-1";
+                    else if(t === 'fund') el.className = "flex flex-col items-center space-y-1 text-[#8b5cf6] transition flex-1";
+                    else el.className = "flex flex-col items-center space-y-1 text-[#ccff00] transition flex-1";
+                } else {
+                    el.className = "flex flex-col items-center space-y-1 text-zinc-500 hover:text-zinc-300 transition flex-1";
+                }
+            });
+            renderView();
+        }
+
+        function renderView() {
+            updateMonthDisplay();
+            let container = document.getElementById('app-view');
+            let activeMonthStr = getActiveMonthString();
+            
+            let monthTx = state.transactions.filter(t => t.date === activeMonthStr);
+            let gelirler = monthTx.filter(t => t.type === 'Gelir').reduce((a, b) => a + b.amount, 0);
+            let giderler = monthTx.filter(t => t.type === 'Gider').reduce((a, b) => a + b.amount, 0);
+            
+            let toplamBakiye = gelirler - giderler;
+            
+            let fonTotal = state.funds.currentBalance || 0;
+            let basePrincipal = state.funds.basePrincipal || 750000;
+
+            let gunlukKar = fonTotal - (state.funds.previousBalance !== undefined ? state.funds.previousBalance : fonTotal);
+            let toplamKar = fonTotal - basePrincipal;
+
+            if (currentTab === 'home') {
+                container.innerHTML = `
+                    <div class="space-y-4 md:space-y-6">
+                        <!-- Bilgisayarda Yan Yana, Mobilde Alt Alta Duracak Grid Yapısı -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Net Kalan Banner -->
+                            <div class="bg-gradient-to-br from-[#1c1c24] to-[#121217] bg-pattern p-6 rounded-[28px] border border-zinc-800/80 shadow-2xl relative overflow-hidden space-y-5">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[10px] font-extrabold tracking-widest text-zinc-400 uppercase">NET KALAN · ${activeMonthStr.toUpperCase()}</span>
+                                </div>
+                                <div class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight ${toplamBakiye < 0 ? 'text-red-400' : ''}">${toplamBakiye.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
+                                
+                                <div class="flex space-x-3 pt-1">
+                                    <div onclick="changeTab('income')" class="bg-[#121215]/80 backdrop-blur-md px-3.5 py-2 rounded-xl border border-zinc-800/60 flex items-center space-x-2 cursor-pointer">
+                                        <span class="text-[#10b981] font-bold">↓</span>
+                                        <span class="text-xs font-bold text-[#10b981]">${gelirler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
+                                    </div>
+                                    <div onclick="changeTab('expense')" class="bg-[#121215]/80 backdrop-blur-md px-3.5 py-2 rounded-xl border border-zinc-800/60 flex items-center space-x-2 cursor-pointer">
+                                        <span class="text-[#ef4444] font-bold">↑</span>
+                                        <span class="text-xs font-bold text-[#ef4444]">${giderler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fon Özeti Kartı -->
+                            <div onclick="changeTab('fund')" class="bg-gradient-to-br from-[#1b1528] to-[#110e1a] bg-fund-pattern p-6 rounded-[28px] border border-purple-500/20 shadow-xl flex flex-col justify-between cursor-pointer hover:border-purple-500/40 transition">
+                                <div class="flex justify-between items-start">
+                                    <div class="space-y-1">
+                                        <div class="text-[10px] font-extrabold tracking-widest text-purple-400 uppercase">YATIRIM FONLARI TOPLAMI</div>
+                                        <div class="text-3xl sm:text-4xl font-extrabold text-white">${fonTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
+                                    </div>
+                                    <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-xl font-bold">📈</div>
+                                </div>
+                                <div class="text-xs ${toplamKar >= 0 ? 'text-emerald-400' : 'text-red-400'} font-semibold mt-4">${toplamKar >= 0 ? '+' : ''}${toplamKar.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺ Toplam Kâr</div>
+                            </div>
+                        </div>
+
+                        <!-- 3 Hızlı İşlem Butonu -->
+                        <div class="grid grid-cols-3 gap-3">
+                            <button onclick="openModal('Gelir')" class="bg-[#18181c] hover:bg-[#202025] border border-zinc-800/80 p-4 sm:p-5 rounded-2xl flex flex-col items-center space-y-2 transition group">
+                                <div class="w-10 h-10 rounded-full bg-[#10b981]/10 text-[#10b981] flex items-center justify-center font-bold text-lg group-hover:scale-110 transition">+</div>
+                                <span class="text-xs font-bold text-white">Gelir Ekle</span>
+                            </button>
+                            <button onclick="openModal('Gider')" class="bg-[#18181c] hover:bg-[#202025] border border-zinc-800/80 p-4 sm:p-5 rounded-2xl flex flex-col items-center space-y-2 transition group">
+                                <div class="w-10 h-10 rounded-full bg-[#ef4444]/10 text-[#ef4444] flex items-center justify-center font-bold text-lg group-hover:scale-110 transition">-</div>
+                                <span class="text-xs font-bold text-white">Gider Ekle</span>
+                            </button>
+                            <button onclick="changeTab('fund')" class="bg-[#18181c] hover:bg-[#202025] border border-zinc-800/80 p-4 sm:p-5 rounded-2xl flex flex-col items-center space-y-2 transition group">
+                                <div class="w-10 h-10 rounded-full bg-[#8b5cf6]/10 text-[#8b5cf6] flex items-center justify-center text-base group-hover:scale-110 transition">📊</div>
+                                <span class="text-xs font-bold text-white">Fon Yönet</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'income') {
+                let gelirList = monthTx.filter(t => t.type === 'Gelir');
+                container.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-lg font-bold text-white">Gelirler (${activeMonthStr})</h2>
+                            <button onclick="openModal('Gelir')" class="bg-[#10b981]/10 text-[#10b981] font-bold px-3.5 py-2 rounded-xl text-xs border border-[#10b981]/20">+ Gelir Ekle</button>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-[#0d281e] to-[#121217] p-5 rounded-3xl border border-[#10b981]/30 shadow-xl space-y-1">
+                            <div class="text-[10px] font-extrabold tracking-widest text-[#10b981] uppercase">TOPLAM AYLIK GELİR</div>
+                            <div class="text-2xl font-extrabold text-white">${gelirler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${gelirList.length === 0 ? '<p class="text-zinc-500 text-xs text-center py-10 col-span-2">Bu ay için girilmiş gelir bulunmuyor.</p>' : 
+                                gelirList.map(t => `
+                                    <div class="bg-[#18181c] border border-zinc-800/60 p-4 rounded-2xl flex justify-between items-center">
+                                        <div>
+                                            <div class="font-bold text-sm text-white">${t.name} <span class="text-[10px] text-zinc-400 font-normal">(${t.category})</span></div>
+                                            <div class="text-[11px] text-zinc-400 mt-0.5">${t.date}</div>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="font-bold text-sm text-[#10b981]">+${t.amount.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
+                                            <button onclick="openEditModal(${t.id})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition">Düzenle</button>
+                                            <button onclick="deleteTx(${t.id})" class="w-7 h-7 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-xs font-bold transition">✕</button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'expense') {
+                let giderList = monthTx.filter(t => t.type === 'Gider');
+                container.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-lg font-bold text-white">Giderler (${activeMonthStr})</h2>
+                            <button onclick="openModal('Gider')" class="bg-[#ef4444]/10 text-[#ef4444] font-bold px-3.5 py-2 rounded-xl text-xs border border-[#ef4444]/20">+ Gider Ekle</button>
+                        </div>
+
+                        <div class="bg-gradient-to-br from-[#2a1215] to-[#121217] p-5 rounded-3xl border border-[#ef4444]/30 shadow-xl space-y-1">
+                            <div class="text-[10px] font-extrabold tracking-widest text-[#ef4444] uppercase">TOPLAM AYLIK GİDER</div>
+                            <div class="text-2xl font-extrabold text-white">${giderler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${giderList.length === 0 ? '<p class="text-zinc-500 text-xs text-center py-10 col-span-2">Bu ay için girilmiş gider bulunmuyor.</p>' : 
+                                giderList.map(t => `
+                                    <div class="bg-[#18181c] border border-zinc-800/60 p-4 rounded-2xl flex justify-between items-center">
+                                        <div>
+                                            <div class="font-bold text-sm text-white">${t.name} <span class="text-[10px] text-zinc-400 font-normal">(${t.category})</span></div>
+                                            <div class="text-[11px] text-zinc-400 mt-0.5">${t.date}</div>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="font-bold text-sm text-[#ef4444]">-${t.amount.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
+                                            <button onclick="openEditModal(${t.id})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition">Düzenle</button>
+                                            <button onclick="deleteTx(${t.id})" class="w-7 h-7 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-xs font-bold transition">✕</button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (currentTab === 'fund') {
+                container.innerHTML = `
+                    <div class="space-y-5 max-w-xl mx-auto">
+                        <h2 class="text-lg font-bold text-white">Yatırım Fonu Yönetimi</h2>
+                        
+                        <div class="bg-gradient-to-br from-[#1b1528] to-[#110e1a] bg-fund-pattern p-6 sm:p-8 rounded-[28px] border border-purple-500/30 shadow-2xl space-y-5">
+                            <div class="flex justify-between items-center">
+                                <div class="text-[10px] font-extrabold tracking-widest text-purple-400 uppercase">GÜNCEL TOPLAM FON BAKİYESİ</div>
+                                <button onclick="openFundModal()" class="w-8 h-8 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 flex items-center justify-center text-xs font-bold transition" title="Fon Bakiyesini Düzenle">✏️</button>
+                            </div>
+                            <div class="text-3xl sm:text-4xl font-extrabold text-white">${fonTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
+                            
+                            <div class="grid grid-cols-2 gap-4 pt-3 border-t border-purple-500/20">
+                                <div class="bg-[#121215]/60 p-4 rounded-2xl border border-purple-500/10">
+                                    <div class="text-[10px] font-bold text-zinc-400">GÜNLÜK KÂR / DEĞİŞİM</div>
+                                    <div class="text-sm sm:text-base font-bold ${gunlukKar >= 0 ? 'text-emerald-400' : 'text-red-400'} mt-1">${gunlukKar >= 0 ? '+' : ''}${gunlukKar.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
+                                </div>
+                                <div class="bg-[#121215]/60 p-4 rounded-2xl border border-purple-500/10">
+                                    <div class="text-[10px] font-bold text-zinc-400">TOPLAM KÂR (GETİRİ)</div>
+                                    <div class="text-sm sm:text-base font-bold ${toplamKar >= 0 ? 'text-emerald-400' : 'text-red-400'} mt-1">${toplamKar >= 0 ? '+' : ''}${toplamKar.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="openFundModal()" class="w-full bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-bold py-4 rounded-2xl text-sm transition shadow-lg shadow-[#8b5cf6]/20 flex items-center justify-center space-x-2">
+                            <span>📝 Fon Bakiyesini Güncelle</span>
+                        </button>
+                    </div>
+                `;
+            } else if (currentTab === 'settings') {
+                container.innerHTML = `
+                    <div class="max-w-xl mx-auto space-y-5">
+                        <h2 class="text-lg font-bold text-white mb-4">Ayarlar</h2>
+                        <div class="bg-[#18181c] border border-zinc-800/60 rounded-3xl p-6 space-y-5">
+                            
+                            <div class="space-y-3 pb-4 border-b border-zinc-800">
+                                <span class="text-sm font-bold text-white block">Uygulama Şifresi</span>
+                                <div class="flex space-x-2">
+                                    <input type="password" id="setting-pin" placeholder="${state.pin ? 'Yeni şifre belirle' : 'Şifre koy'}" maxlength="6" class="flex-1 bg-[#121215] border border-zinc-800 rounded-xl p-3 text-white text-xs outline-none focus:border-[#ccff00]">
+                                    <button onclick="savePinSetting()" class="bg-[#ccff00] text-black font-bold px-4 py-3 rounded-xl text-xs">Kaydet</button>
+                                </div>
+                                ${state.pin ? '<button onclick="removePin()" class="text-red-400 text-xs font-semibold hover:underline">Şifreyi Kaldır</button>' : ''}
+                            </div>
+
+                            <div class="flex justify-between items-center py-2 border-b border-zinc-800">
+                                <span class="text-sm font-medium text-white">Dönem Hareketleri (Tüm Aylar)</span>
+                                <button onclick="openLogModal()" class="bg-purple-500/10 text-purple-400 text-xs font-bold px-3 py-1.5 rounded-xl">Yönet / Gör</button>
+                            </div>
+
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-sm font-medium text-white">Tablo Verilerini Sıfırla</span>
+                                <button onclick="resetData()" class="bg-red-500/10 text-red-400 text-xs font-bold px-3 py-1.5 rounded-xl">Sıfırla</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function savePinSetting() {
+            let val = document.getElementById('setting-pin').value;
+            if(!val) { alert('Lütfen bir şifre girin.'); return; }
+            state.pin = val;
+            saveState();
+            alert('Şifre başarıyla kaydedildi!');
+            renderView();
+        }
+
+        function removePin() {
+            if(confirm("Uygulama şifresi kaldırılsın mı?")) {
+                state.pin = "";
+                saveState();
+                alert('Şifre kaldırıldı.');
+                renderView();
+            }
+        }
+
+        function openLogModal() {
+            let activeMonthStr = getActiveMonthString();
+            if(!modalSelectedMonth) modalSelectedMonth = activeMonthStr;
+
+            let allMonths = [...new Set(state.transactions.map(t => t.date))];
+            
+            let selectEl = document.getElementById('modal-month-select');
+            selectEl.innerHTML = allMonths.map(m => `<option value="${m}" ${m === modalSelectedMonth ? 'selected' : ''}>${m}</option>`).join('');
+
+            renderModalList();
+            document.getElementById('log-modal').style.display = 'flex';
+        }
+
+        function changeModalMonth(val) {
+            modalSelectedMonth = val;
+            renderModalList();
+        }
+
+        function renderModalList() {
+            let listEl = document.getElementById('log-list');
+            let monthTx = state.transactions.filter(t => t.date === modalSelectedMonth);
+
+            listEl.innerHTML = monthTx.length === 0 ? '<p class="text-zinc-500 text-xs text-center py-10">Bu dönem için kayıtlı hareket bulunmuyor.</p>' :
+                monthTx.map(t => `
+                    <div class="bg-[#121215] border border-zinc-800/80 p-3.5 rounded-2xl flex justify-between items-center">
+                        <div>
+                            <div class="text-xs text-white font-bold">${t.name} <span class="text-[10px] text-zinc-400">(${t.category})</span></div>
+                            <div class="text-[10px] text-zinc-400 mt-0.5">${t.type} · ${t.date}</div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-bold ${t.type === 'Gelir' ? 'text-[#10b981]' : 'text-[#ef4444]'}">${t.type === 'Gelir' ? '+' : '-'}${t.amount.toLocaleString('tr-TR')} ₺</span>
+                            <button onclick="closeLogModal(); openEditModal(${t.id})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1 rounded-lg text-[10px] font-semibold">Düzenle</button>
+                            <button onclick="deleteTxFromModal(${t.id})" class="w-6 h-6 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-[11px] font-bold">✕</button>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        function closeLogModal() { document.getElementById('log-modal').style.display = 'none'; }
+
+        function openModal(type) {
+            editingTxId = null;
+            activeModalType = type;
+            document.getElementById('modal-title').innerText = type === 'Gelir' ? `${getActiveMonthString()} - Gelir Ekle` : `${getActiveMonthString()} - Gider Ekle`;
+            document.getElementById('m-name').value = '';
+            document.getElementById('m-amount').value = '';
+
+            let catSelect = document.getElementById('m-cat');
+            if(type === 'Gelir') {
+                catSelect.innerHTML = `
+                    <option value="Gelir">Gelir / Maaş</option>
+                    <option value="Fondan Çek">Fondan Çek</option>
+                `;
+            } else {
+                catSelect.innerHTML = `
+                    <option value="Gider">Kredi Kartı / Gider / Kira</option>
+                    <option value="Fon Yatırımı">Fon Yatırımı</option>
+                `;
+            }
+
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function openEditModal(id) {
+            let tx = state.transactions.find(t => t.id === id);
+            if(!tx) return;
+            editingTxId = id;
+            activeModalType = tx.type;
+            document.getElementById('modal-title').innerText = `${tx.name} - Düzenle`;
+            document.getElementById('m-name').value = tx.name;
+            document.getElementById('m-amount').value = tx.amount;
+
+            let catSelect = document.getElementById('m-cat');
+            if(tx.type === 'Gelir') {
+                catSelect.innerHTML = `
+                    <option value="Gelir" ${tx.category === 'Gelir' ? 'selected' : ''}>Gelir / Maaş</option>
+                    <option value="Fondan Çek" ${tx.category === 'Fondan Çek' ? 'selected' : ''}>Fondan Çek</option>
+                `;
+            } else {
+                catSelect.innerHTML = `
+                    <option value="Gider" ${tx.category === 'Gider' ? 'selected' : ''}>Kredi Kartı / Gider / Kira</option>
+                    <option value="Fon Yatırımı" ${tx.category === 'Fon Yatırımı' ? 'selected' : ''}>Fon Yatırımı</option>
+                `;
+            }
+
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+        function saveModalData() {
+            let name = document.getElementById('m-name').value;
+            let amount = parseFloat(document.getElementById('m-amount').value);
+            let cat = document.getElementById('m-cat').value;
+            let type = activeModalType;
+
+            if(!name || isNaN(amount)) { alert('Lütfen geçerli bir isim ve tutar girin.'); return; }
+
+            let oldTx = editingTxId !== null ? state.transactions.find(t => t.id === editingTxId) : null;
+            let oldAmount = oldTx ? oldTx.amount : 0;
+            let oldCat = oldTx ? oldTx.category : '';
+
+            if(oldTx) {
+                if(oldCat === 'Fon Yatırımı') {
+                    state.funds.basePrincipal -= oldAmount;
+                    state.funds.currentBalance -= oldAmount;
+                }
+                if(oldCat === 'Fondan Çek') {
+                    state.funds.basePrincipal += oldAmount;
+                    state.funds.currentBalance += oldAmount;
+                }
+            }
+
+            if(cat === 'Fon Yatırımı') {
+                state.funds.basePrincipal += amount;
+                state.funds.currentBalance += amount;
+            } else if(cat === 'Fondan Çek') {
+                state.funds.basePrincipal -= amount;
+                state.funds.currentBalance -= amount;
+            }
+
+            if(editingTxId !== null) {
+                if(oldTx) {
+                    oldTx.name = name;
+                    oldTx.amount = amount;
+                    oldTx.type = type;
+                    oldTx.category = cat;
+                }
+            } else {
+                state.transactions.push({ id: Date.now(), name, amount, type, category: cat, date: getActiveMonthString() });
+            }
+
+            saveState(); closeModal(); renderView();
+        }
+
+        function openFundModal() {
+            document.getElementById('f-balance').value = state.funds.currentBalance || '';
+            document.getElementById('fund-modal').style.display = 'flex';
+        }
+
+        function closeFundModal() { document.getElementById('fund-modal').style.display = 'none'; }
+
+        function saveFundBalance() {
+            let newBalance = parseFloat(document.getElementById('f-balance').value);
+            if(isNaN(newBalance)) { alert('Lütfen geçerli bir bakiye tutarı girin.'); return; }
+
+            state.funds.previousBalance = state.funds.currentBalance || newBalance;
+            state.funds.currentBalance = newBalance;
+
+            saveState(); closeFundModal(); renderView();
+        }
+
+        function deleteTx(id) {
+            let tx = state.transactions.find(t => t.id === id);
+            if(tx) {
+                if(tx.category === 'Fon Yatırımı') {
+                    state.funds.basePrincipal -= tx.amount;
+                    state.funds.currentBalance -= tx.amount;
+                }
+                if(tx.category === 'Fondan Çek') {
+                    state.funds.basePrincipal += tx.amount;
+                    state.funds.currentBalance += tx.amount;
+                }
+            }
+            state.transactions = state.transactions.filter(t => t.id !== id);
+            saveState(); renderView();
+        }
+
+        function deleteTxFromModal(id) {
+            deleteTx(id);
+            renderModalList();
+        }
+
+        function resetData() {
+            if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
+                localStorage.removeItem('cep_butce_secure_data');
+                location.reload();
+            }
+        }
+
+        checkLock();
+        renderView();
+    </script>
+</body>
+</html>
