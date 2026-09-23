@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Pro Finans</title>
+    <title>CepteBütçe - Auto Cloud Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -37,6 +37,7 @@
             <div class="flex items-center space-x-2">
                 <div class="w-2.5 h-2.5 rounded-full bg-[#ccff00]"></div>
                 <span class="text-xs sm:text-sm font-extrabold tracking-wide text-white">CepteBütçe</span>
+                <span id="sync-status" class="text-[9px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400">Bulut: Otomatik</span>
             </div>
             <div class="flex items-center space-x-2.5 bg-[#18181c] px-3 py-1.5 rounded-2xl border border-zinc-800">
                 <button onclick="prevMonth()" class="w-6 h-6 rounded-xl bg-zinc-800/60 hover:bg-zinc-700 text-zinc-300 flex items-center justify-center font-bold transition text-xs">◀</button>
@@ -144,10 +145,7 @@
 
     <script>
         let defaultTransactions = [
-            // EYLÜL 2026
             { id: 101, name: "Fon Yatırımı", amount: 27000, type: "Gider", category: "Fon Yatırımı", date: "Eylül 2026" },
-
-            // EKİM 2026
             { id: 201, name: "Maaş 1", amount: 35000, type: "Gelir", category: "Gelir", date: "Ekim 2026" },
             { id: 202, name: "Maaş 2", amount: 45000, type: "Gelir", category: "Gelir", date: "Ekim 2026" },
             { id: 203, name: "Nejat", amount: 1200, type: "Gelir", category: "Gelir", date: "Ekim 2026" },
@@ -156,8 +154,6 @@
             { id: 206, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Ekim 2026" },
             { id: 207, name: "YKB Kredi", amount: 15000, type: "Gider", category: "Gider", date: "Ekim 2026" },
             { id: 208, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Ekim 2026" },
-
-            // KASIM 2026
             { id: 301, name: "Maaş 1", amount: 45000, type: "Gelir", category: "Gelir", date: "Kasım 2026" },
             { id: 302, name: "Maaş 2", amount: 45000, type: "Gelir", category: "Gelir", date: "Kasım 2026" },
             { id: 303, name: "Nejat", amount: 1000, type: "Gelir", category: "Gelir", date: "Kasım 2026" },
@@ -166,8 +162,6 @@
             { id: 306, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Kasım 2026" },
             { id: 307, name: "YKB Kredi", amount: 15000, type: "Gider", category: "Gider", date: "Kasım 2026" },
             { id: 308, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Kasım 2026" },
-
-            // ARALIK 2026
             { id: 401, name: "Maaş 1", amount: 45000, type: "Gelir", category: "Gelir", date: "Aralık 2026" },
             { id: 402, name: "Maaş 2", amount: 45000, type: "Gelir", category: "Gelir", date: "Aralık 2026" },
             { id: 403, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Aralık 2026" },
@@ -175,8 +169,6 @@
             { id: 405, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Aralık 2026" },
             { id: 406, name: "YKB Kredi", amount: 15000, type: "Gider", category: "Gider", date: "Aralık 2026" },
             { id: 407, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Aralık 2026" },
-
-            // OCAK 2027
             { id: 501, name: "Maaş 1", amount: 45000, type: "Gelir", category: "Gelir", date: "Ocak 2027" },
             { id: 502, name: "Maaş 2", amount: 45000, type: "Gelir", category: "Gelir", date: "Ocak 2027" },
             { id: 503, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Ocak 2027" },
@@ -184,8 +176,6 @@
             { id: 505, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Ocak 2027" },
             { id: 506, name: "YKB Kredi", amount: 15000, type: "Gider", category: "Gider", date: "Ocak 2027" },
             { id: 507, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Ocak 2027" },
-
-            // ŞUBAT 2027
             { id: 601, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Şubat 2027" },
             { id: 602, name: "Maaş 2", amount: 45000, type: "Gelir", category: "Gelir", date: "Şubat 2027" },
             { id: 603, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Şubat 2027" },
@@ -193,8 +183,6 @@
             { id: 605, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Şubat 2027" },
             { id: 606, name: "YKB Kredi", amount: 15000, type: "Gider", category: "Gider", date: "Şubat 2027" },
             { id: 607, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Şubat 2027" },
-
-            // MART 2027
             { id: 701, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Mart 2027" },
             { id: 702, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Mart 2027" },
             { id: 703, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Mart 2027" },
@@ -202,8 +190,6 @@
             { id: 705, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Mart 2027" },
             { id: 706, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Mart 2027" },
             { id: 707, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Mart 2027" },
-
-            // NİSAN 2027
             { id: 801, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Nisan 2027" },
             { id: 802, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Nisan 2027" },
             { id: 803, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Nisan 2027" },
@@ -211,8 +197,6 @@
             { id: 805, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Nisan 2027" },
             { id: 806, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Nisan 2027" },
             { id: 807, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Nisan 2027" },
-
-            // MAYIS 2027
             { id: 901, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Mayıs 2027" },
             { id: 902, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Mayıs 2027" },
             { id: 903, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Mayıs 2027" },
@@ -220,8 +204,6 @@
             { id: 905, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Mayıs 2027" },
             { id: 906, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Mayıs 2027" },
             { id: 907, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Mayıs 2027" },
-
-            // HAZİRAN 2027
             { id: 1001, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Haziran 2027" },
             { id: 1002, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Haziran 2027" },
             { id: 1003, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Haziran 2027" },
@@ -229,8 +211,6 @@
             { id: 1005, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Haziran 2027" },
             { id: 1006, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Haziran 2027" },
             { id: 1007, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Haziran 2027" },
-
-            // TEMMUZ 2027
             { id: 1101, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Temmuz 2027" },
             { id: 1102, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Temmuz 2027" },
             { id: 1103, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Temmuz 2027" },
@@ -238,8 +218,6 @@
             { id: 1105, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Temmuz 2027" },
             { id: 1106, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Temmuz 2027" },
             { id: 1107, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Temmuz 2027" },
-
-            // AĞUSTOS 2027
             { id: 1201, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Ağustos 2027" },
             { id: 1202, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Ağustos 2027" },
             { id: 1203, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Ağustos 2027" },
@@ -247,8 +225,6 @@
             { id: 1205, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Ağustos 2027" },
             { id: 1206, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Ağustos 2027" },
             { id: 1207, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Ağustos 2027" },
-
-            // EYLÜL 2027
             { id: 1301, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Eylül 2027" },
             { id: 1302, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Eylül 2027" },
             { id: 1303, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Eylül 2027" },
@@ -256,8 +232,6 @@
             { id: 1305, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Eylül 2027" },
             { id: 1306, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Eylül 2027" },
             { id: 1307, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Eylül 2027" },
-
-            // EKİM 2027
             { id: 1401, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Ekim 2027" },
             { id: 1402, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Ekim 2027" },
             { id: 1403, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Ekim 2027" },
@@ -265,8 +239,6 @@
             { id: 1405, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Ekim 2027" },
             { id: 1406, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Ekim 2027" },
             { id: 1407, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Ekim 2027" },
-
-            // KASIM 2027
             { id: 1501, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Kasım 2027" },
             { id: 1502, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Kasım 2027" },
             { id: 1503, name: "Kira", amount: 27000, type: "Gider", category: "Gider", date: "Kasım 2027" },
@@ -274,8 +246,6 @@
             { id: 1505, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Kasım 2027" },
             { id: 1506, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Kasım 2027" },
             { id: 1507, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Kasım 2027" },
-
-            // ARALIK 2027
             { id: 1601, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Aralık 2027" },
             { id: 1602, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Aralık 2027" },
             { id: 1603, name: "Kira", amount: 27000, type: "Gider", category: "Gider", date: "Aralık 2027" },
@@ -286,7 +256,7 @@
         ];
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v5', 'cep_butce_excel_v4', 'cep_butce_excel_v3'];
+        const keysToCheck = ['cep_butce_excel_v7', 'cep_butce_excel_v6', 'cep_butce_excel_v5'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -303,17 +273,83 @@
         let state = savedData || {
             transactions: defaultTransactions,
             funds: { currentBalance: 750000, principal: 750000, previousBalance: 750000 },
-            pin: ""
+            pin: "",
+            syncCode: localStorage.getItem('cep_sync_code') || "ali-cengiz-butce-2026",
+            lastUpdated: Date.now()
         };
 
-        // Eğer fon objesi eksik veya eski formatlıysa güvenli değere çek
         if(!state.funds || state.funds.principal === undefined) {
             let bal = state.funds?.currentBalance || 750000;
             state.funds = { currentBalance: bal, principal: bal, previousBalance: bal };
         }
+        if(!state.syncCode) state.syncCode = "ali-cengiz-butce-2026";
+        if(!state.lastUpdated) state.lastUpdated = Date.now();
 
         function saveState() {
-            localStorage.setItem('cep_butce_excel_v5', JSON.stringify(state));
+            state.lastUpdated = Date.now();
+            localStorage.setItem('cep_butce_excel_v7', JSON.stringify(state));
+            pushToCloud();
+        }
+
+        // Buluta Otomatik Gönderim
+        async function pushToCloud() {
+            let blobId = localStorage.getItem('cep_blob_id');
+            document.getElementById('sync-status').innerText = "Bulut: Kaydediliyor...";
+            document.getElementById('sync-status').className = "text-[9px] px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400";
+            try {
+                if (blobId) {
+                    let res = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: JSON.stringify(state)
+                    });
+                    if (res.ok) {
+                        document.getElementById('sync-status').innerText = "Bulut: Otomatik Eşit";
+                        document.getElementById('sync-status').className = "text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400";
+                        return;
+                    }
+                }
+                // İlk kez kayıt oluşturuluyorsa
+                let res = await fetch('https://jsonblob.com/api/jsonBlob', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(state)
+                });
+                if(res.ok) {
+                    let locationHeader = res.headers.get('Location');
+                    if(locationHeader) {
+                        let newBlobId = locationHeader.split('/').pop();
+                        localStorage.setItem('cep_blob_id', newBlobId);
+                    }
+                    document.getElementById('sync-status').innerText = "Bulut: Otomatik Eşit";
+                    document.getElementById('sync-status').className = "text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400";
+                }
+            } catch(e) {
+                document.getElementById('sync-status').innerText = "Bulut: Çevrimdışı";
+                document.getElementById('sync-status').className = "text-[9px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400";
+            }
+        }
+
+        // Arka Planda Sürekli Otomatik Kontrol (Her 5 saniyede bir)
+        async function backgroundAutoSync() {
+            let blobId = localStorage.getItem('cep_blob_id');
+            if(!blobId) return;
+            try {
+                let res = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`);
+                if(res.ok) {
+                    let cloudData = await res.json();
+                    if(cloudData && cloudData.lastUpdated) {
+                        // Eğer buluttaki veri yereldekinden daha yeniyse otomatik güncelle
+                        if(cloudData.lastUpdated > (state.lastUpdated || 0)) {
+                            state = cloudData;
+                            localStorage.setItem('cep_butce_excel_v7', JSON.stringify(state));
+                            renderView();
+                            document.getElementById('sync-status').innerText = "Bulut: Güncellendi";
+                            document.getElementById('sync-status').className = "text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400";
+                        }
+                    }
+                }
+            } catch(e){}
         }
 
         let currentTab = 'home';
@@ -553,9 +589,18 @@
             } else if (currentTab === 'settings') {
                 container.innerHTML = `
                     <div class="max-w-xl mx-auto space-y-4">
-                        <h2 class="text-sm sm:text-lg font-bold text-white mb-2">Ayarlar</h2>
+                        <h2 class="text-sm sm:text-lg font-bold text-white mb-2">Ayarlar & Otomatik Senkronizasyon</h2>
                         <div class="bg-[#18181c] border border-zinc-800/60 rounded-3xl p-5 space-y-4">
                             
+                            <div class="space-y-2.5 pb-3 border-b border-zinc-800">
+                                <span class="text-xs sm:text-sm font-bold text-white block">☁️ Bulut Senkronizasyon ID (Blob ID)</span>
+                                <p class="text-[10px] text-zinc-400">Telefonunda oluşan bu ID'yi bilgisayardaki Ayarlar kısmına yapıştırırsan iki cihaz otomatik bağlanır.</p>
+                                <div class="flex space-x-2">
+                                    <input type="text" id="setting-blob-id" value="${localStorage.getItem('cep_blob_id') || ''}" placeholder="Otomatik oluşur..." class="flex-1 bg-[#121215] border border-zinc-800 rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#ccff00]">
+                                    <button onclick="saveManualBlobId()" class="bg-[#ccff00] text-black font-bold px-3.5 py-2.5 rounded-xl text-xs">Bağla</button>
+                                </div>
+                            </div>
+
                             <div class="space-y-2.5 pb-3 border-b border-zinc-800">
                                 <span class="text-xs sm:text-sm font-bold text-white block">Uygulama Şifresi</span>
                                 <div class="flex space-x-2">
@@ -578,6 +623,14 @@
                     </div>
                 `;
             }
+        }
+
+        function saveManualBlobId() {
+            let val = document.getElementById('setting-blob-id').value.trim();
+            if(!val) { alert('Lütfen geçerli bir ID girin.'); return; }
+            localStorage.setItem('cep_blob_id', val);
+            alert('Bulut ID bağlandı! Veriler otomatik eşitleniyor.');
+            backgroundAutoSync();
         }
 
         function savePinSetting() {
@@ -744,13 +797,18 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v5');
+                localStorage.removeItem('cep_butce_excel_v7');
+                localStorage.removeItem('cep_blob_id');
                 location.reload();
             }
         }
 
         checkLock();
         renderView();
+        pushToCloud();
+
+        // Her 5 saniyede bir buluttaki güncellemeleri otomatik kontrol et
+        setInterval(backgroundAutoSync, 5000);
     </script>
 </body>
 </html>
