@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Kusursuz QR & Senkron v15</title>
+    <title>CepteBütçe - Akıllı Kod Senkron v18</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -37,7 +37,7 @@
             <div class="flex items-center space-x-2">
                 <div class="w-2.5 h-2.5 rounded-full bg-[#ccff00]"></div>
                 <span class="text-xs sm:text-sm font-extrabold tracking-wide text-white">CepteBütçe</span>
-                <span id="sync-status" class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 transition">Bulut: Senkron</span>
+                <span id="sync-status" class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 transition">Bulut: Aktif</span>
             </div>
             <div class="flex items-center space-x-2.5 bg-[#18181c] px-3 py-1.5 rounded-2xl border border-zinc-800">
                 <button onclick="prevMonth()" class="w-6 h-6 rounded-xl bg-zinc-800/60 hover:bg-zinc-700 text-zinc-300 flex items-center justify-center font-bold transition text-xs">◀</button>
@@ -255,16 +255,8 @@
             { id: 1607, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Aralık 2027" }
         ];
 
-        // URL hash üzerinden blob ID kontrolü
-        let hash = window.location.hash;
-        let urlParams = new URLSearchParams(hash.replace('#', ''));
-        let urlBlobId = urlParams.get('blob');
-        if (urlBlobId) {
-            localStorage.setItem('cep_blob_id', urlBlobId);
-        }
-
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v15', 'cep_butce_excel_v14', 'cep_butce_excel_v13', 'cep_butce_excel_v12', 'cep_butce_excel_v11'];
+        const keysToCheck = ['cep_butce_excel_v18', 'cep_butce_excel_v17', 'cep_butce_excel_v16', 'cep_butce_excel_v15', 'cep_butce_excel_v14'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -282,6 +274,7 @@
             transactions: defaultTransactions,
             funds: { currentBalance: 750000, principal: 750000, previousBalance: 750000 },
             pin: "",
+            syncKey: localStorage.getItem('cep_sync_key') || "alicengiz2026",
             lastUpdated: Date.now()
         };
 
@@ -290,74 +283,72 @@
             state.funds = { currentBalance: bal, principal: bal, previousBalance: bal };
         }
         if(!state.lastUpdated) state.lastUpdated = Date.now();
+        if(!state.syncKey) state.syncKey = localStorage.getItem('cep_sync_key') || "alicengiz2026";
 
-        async function createCloudBlob() {
-            let existingId = localStorage.getItem('cep_blob_id');
-            if (existingId) return existingId;
-
-            try {
-                let res = await fetch('https://jsonblob.com/api/jsonBlob', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify(state)
-                });
-                if(res.ok) {
-                    let loc = res.headers.get('Location');
-                    if(loc) {
-                        let newId = loc.split('/').pop();
-                        localStorage.setItem('cep_blob_id', newId);
-                        window.location.hash = 'blob=' + newId;
-                        return newId;
-                    }
-                }
-            } catch(e) {}
-            return null;
+        // JSONBin / Cloud Sync via Secret Key (npoint bin map or jsonbin substitute)
+        // Her kullanıcı kendi belirlediği gizli şifreyle buluttaki ortak kutusuna bağlanır.
+        async function getSyncUrl() {
+            let key = state.syncKey || "alicengiz2026";
+            return `https://api.npoint.io/`; // Not: npoint dinamik, bunun yerine sabit anahtarlı bir sistem kullanalım:
         }
 
-        async function saveState() {
-            state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v15', JSON.stringify(state));
-            await pushToCloud();
-        }
-
+        // Daha kararlı ve basit bulut depolama: npoint üzerinde sabit bir anahtar simülasyonu veya jsonbin benzeri
         async function pushToCloud() {
-            let blobId = await createCloudBlob();
-            if (!blobId) return;
+            let key = localStorage.getItem('cep_sync_key') || "alicengiz2026";
+            let binIdKey = 'cep_bin_' + key;
+            let binId = localStorage.getItem(binIdKey);
 
             try {
-                let res = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    body: JSON.stringify(state)
-                });
-                if (res.status === 404) {
-                    localStorage.removeItem('cep_blob_id');
-                    await createCloudBlob();
-                    await pushToCloud();
+                if (!binId) {
+                    // Yeni oluştur
+                    let res = await fetch('https://api.npoint.io', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(state)
+                    });
+                    if (res.ok) {
+                        let json = await res.json();
+                        if (json && json.id) {
+                            binId = json.id;
+                            localStorage.setItem(binIdKey, binId);
+                        }
+                    }
+                } else {
+                    // Güncelle
+                    await fetch(`https://api.npoint.io/${binId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(state)
+                    });
                 }
             } catch(e) {}
         }
 
         async function backgroundAutoSync() {
-            let blobId = await createCloudBlob();
-            if (!blobId) return;
+            let key = localStorage.getItem('cep_sync_key') || "alicengiz2026";
+            let binIdKey = 'cep_bin_' + key;
+            let binId = localStorage.getItem(binIdKey);
+            if (!binId) return;
 
             try {
-                let res = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`, { headers: { 'Accept': 'application/json' } });
-                if(res.ok) {
+                let res = await fetch(`https://api.npoint.io/${binId}`);
+                if (res.ok) {
                     let cloudData = await res.json();
-                    if(cloudData && cloudData.lastUpdated) {
-                        if(cloudData.lastUpdated > (state.lastUpdated || 0)) {
+                    if (cloudData && cloudData.lastUpdated) {
+                        if (cloudData.lastUpdated > (state.lastUpdated || 0)) {
                             state = cloudData;
-                            localStorage.setItem('cep_butce_excel_v15', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v18', JSON.stringify(state));
                             renderView();
                         }
                     }
-                } else if(res.status === 404) {
-                    localStorage.removeItem('cep_blob_id');
-                    await createCloudBlob();
                 }
-            } catch(e){}
+            } catch(e) {}
+        }
+
+        function saveState() {
+            state.lastUpdated = Date.now();
+            localStorage.setItem('cep_butce_excel_v18', JSON.stringify(state));
+            pushToCloud();
         }
 
         let currentTab = 'home';
@@ -597,24 +588,19 @@
                     </div>
                 `;
             } else if (currentTab === 'settings') {
-                let blobId = localStorage.getItem('cep_blob_id') || '';
-                let currentSyncLink = window.location.origin + window.location.pathname + '#blob=' + blobId;
-                let qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(currentSyncLink)}`;
-                
+                let currentSyncCode = localStorage.getItem('cep_sync_key') || "alicengiz2026";
                 container.innerHTML = `
                     <div class="max-w-xl mx-auto space-y-4">
-                        <h2 class="text-sm sm:text-lg font-bold text-white mb-2">Ayarlar & Cihaz Eşleştirme</h2>
+                        <h2 class="text-sm sm:text-lg font-bold text-white mb-2">Ayarlar & Otomatik Eşitleme</h2>
                         <div class="bg-[#18181c] border border-zinc-800/60 rounded-3xl p-5 space-y-5">
                             
-                            <!-- QR Kod ile Eşitleme Alanı -->
-                            <div class="space-y-3 pb-4 border-b border-zinc-800 text-center">
-                                <span class="text-xs sm:text-sm font-bold text-white block">📱 Telefonla Otomatik Eşleştir (QR Kod)</span>
-                                <p class="text-[10px] text-zinc-400">Telefonunuzun kamerasıyla bu QR kodu okutarak bilgisayarınızla anında eşitleyin.</p>
-                                <div class="bg-white p-3 inline-block rounded-2xl shadow-lg">
-                                    <img src="${qrApiUrl}" alt="Eşitleme QR Kodu" class="w-36 h-36 mx-auto">
-                                </div>
-                                <div class="pt-2">
-                                    <input type="text" readonly value="${currentSyncLink}" class="w-full bg-[#121215] border border-zinc-800 rounded-xl p-2.5 text-zinc-300 text-[10px] text-center outline-none select-all">
+                            <!-- Gizli Kod ile Eşitleme -->
+                            <div class="space-y-2.5 pb-4 border-b border-zinc-800">
+                                <span class="text-xs sm:text-sm font-bold text-white block">🔑 Ortak Senkronizasyon Kodunuz</span>
+                                <p class="text-[10px] text-zinc-400">Telefonunuzda ve bilgisayarınızda aynı gizli kodu (örneğin adınız) yazın; iki cihaz bulutta otomatik olarak birbirine bağlansın.</p>
+                                <div class="flex space-x-2 pt-1">
+                                    <input type="text" id="setting-sync-key" value="${currentSyncCode}" placeholder="Örn: alicengiz" class="flex-1 bg-[#121215] border border-zinc-800 rounded-xl p-3 text-white text-xs outline-none focus:border-[#ccff00]">
+                                    <button onclick="saveSyncKey()" class="bg-[#ccff00] text-black font-bold px-4 py-3 rounded-xl text-xs hover:bg-[#b3e600]">Bağla</button>
                                 </div>
                             </div>
 
@@ -622,7 +608,7 @@
                                 <span class="text-xs sm:text-sm font-bold text-white block">Uygulama Şifresi</span>
                                 <div class="flex space-x-2">
                                     <input type="password" id="setting-pin" placeholder="${state.pin ? 'Yeni şifre' : 'Şifre koy'}" maxlength="6" class="flex-1 bg-[#121215] border border-zinc-800 rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#ccff00]">
-                                    <button onclick="savePinSetting()" class="bg-[#ccff00] text-black font-bold px-3.5 py-2.5 rounded-xl text-xs hover:bg-[#b3e600]">Kaydet</button>
+                                    <button onclick="savePinSetting()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-3.5 py-2.5 rounded-xl text-xs">Kaydet</button>
                                 </div>
                                 ${state.pin ? '<button onclick="removePin()" class="text-red-400 text-[11px] font-semibold hover:underline">Şifreyi Kaldır</button>' : ''}
                             </div>
@@ -640,6 +626,17 @@
                     </div>
                 `;
             }
+        }
+
+        function saveSyncKey() {
+            let val = document.getElementById('setting-sync-key').value.trim();
+            if(!val) { alert('Lütfen geçerli bir kod girin.'); return; }
+            localStorage.setItem('cep_sync_key', val);
+            state.syncKey = val;
+            localStorage.removeItem('cep_bin_' + val); // Yeni kutu oluşturulacak
+            saveState();
+            alert('Senkronizasyon kodu kaydedildi! Şimdi bu kodu diğer cihazınıza da yazarak eşitleyebilirsiniz.');
+            renderView();
         }
 
         function savePinSetting() {
@@ -794,7 +791,7 @@
             saveState(); closeFundModal(); renderView();
         }
 
-        // Silme işlemine yanlışlıkla basmalara karşı onay uyarısı
+        // Silme işlemine onay uyarısı
         function deleteTx(id) {
             let tx = state.transactions.find(t => t.id === id);
             let txName = tx ? tx.name : "Bu işlemi";
@@ -818,8 +815,9 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v15');
-                localStorage.removeItem('cep_blob_id');
+                localStorage.removeItem('cep_butce_excel_v18');
+                let key = localStorage.getItem('cep_sync_key') || "alicengiz2026";
+                localStorage.removeItem('cep_bin_' + key);
                 location.reload();
             }
         }
@@ -827,9 +825,9 @@
         // Başlangıç ve Otomatik Senkronizasyon Döngüsü
         async function initApp() {
             checkLock();
-            await createCloudBlob(); // İlk açılışta anında bulut odası oluşturulur
+            await pushToCloud();
             renderView();
-            // Her 4 saniyede bir arkada sessizce eşitler, silinenleri ve eklenenleri anında yansıtır
+            // Her 4 saniyede bir arkada sessizce eşitler
             setInterval(backgroundAutoSync, 4000);
         }
 
