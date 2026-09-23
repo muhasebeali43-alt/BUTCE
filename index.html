@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Canlı Senkron v24</title>
+    <title>CepteBütçe - Canlı Senkron v28</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccff00'><path d='M20 6V4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6h-2v6H6V6h14zm0 4V8h2v2h-2z'/></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccff00'><path d='M20 6V4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6h-2v6H6V6h14zm0 4V8h2v2h-2z'/></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -263,7 +263,7 @@
         ];
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v24', 'cep_butce_excel_v23', 'cep_butce_excel_v22', 'cep_butce_excel_v21', 'cep_butce_excel_v20'];
+        const keysToCheck = ['cep_butce_excel_v28', 'cep_butce_excel_v27', 'cep_butce_excel_v26', 'cep_butce_excel_v25', 'cep_butce_excel_v24'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -279,18 +279,18 @@
 
         let state = savedData || {
             transactions: defaultTransactions,
-            funds: { currentBalance: 750000, principal: 750000, previousBalance: 750000 },
+            funds: { currentBalance: 761167, principal: 761167, previousBalance: 761167, lastDate: new Date().toISOString().split('T')[0] },
             pin: "",
             lastUpdated: Date.now()
         };
 
-        if(!state.funds || state.funds.principal === undefined) {
-            let bal = state.funds?.currentBalance || 750000;
-            state.funds = { currentBalance: bal, principal: bal, previousBalance: bal };
+        if(!state.funds || state.funds.principal === undefined || state.funds.lastDate === undefined) {
+            let bal = state.funds?.currentBalance || 761167;
+            state.funds = { currentBalance: bal, principal: bal, previousBalance: bal, lastDate: new Date().toISOString().split('T')[0] };
         }
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
-        // Firebase Firestore Entegrasyonu (Cüzdan Simge Destekli v24)
+        // Firebase Firestore Entegrasyonu (v28 - Devirli Bakiye)
         const firebaseConfig = {
             apiKey: "AIzaSyCLxx02KpBH2MFGXEePIb-w79FVwOBW4GQ",
             authDomain: "butce-24f0f.firebaseapp.com",
@@ -317,7 +317,7 @@
                         if (cloudData && cloudData.lastUpdated && cloudData.lastUpdated > (state.lastUpdated || 0)) {
                             isSyncingFromCloud = true;
                             state = cloudData;
-                            localStorage.setItem('cep_butce_excel_v24', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v28', JSON.stringify(state));
                             renderView();
                             isSyncingFromCloud = false;
                         }
@@ -335,7 +335,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v24', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v28', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -417,18 +417,65 @@
             renderView();
         }
 
+        function parseMonthYear(myStr) {
+            let parts = myStr.split(' ');
+            let mName = parts[0];
+            let year = parseInt(parts[1]) || 2026;
+            let mIndex = months.indexOf(mName);
+            return year * 12 + mIndex;
+        }
+
+        function getChronologicalMonths() {
+            let monthsSet = new Set(state.transactions.map(t => t.date));
+            monthsSet.add(getActiveMonthString());
+            let arr = Array.from(monthsSet);
+            arr.sort((a, b) => parseMonthYear(a) - parseMonthYear(b));
+            return arr;
+        }
+
+        function calculateMonthFinancials(targetMonthStr) {
+            let chronoMonths = getChronologicalMonths();
+            let targetIndex = chronoMonths.indexOf(targetMonthStr);
+            
+            let devredenBakiye = 0;
+            let buAyGelir = 0;
+            let buAyGider = 0;
+            
+            let runningBalance = 0;
+            for (let i = 0; i <= targetIndex; i++) {
+                let mStr = chronoMonths[i];
+                let mTx = state.transactions.filter(t => t.date === mStr);
+                let g = mTx.filter(t => t.type === 'Gelir').reduce((a, b) => a + b.amount, 0);
+                let d = mTx.filter(t => t.type === 'Gider' || t.type === 'Fon Yatırımı').reduce((a, b) => a + b.amount, 0);
+                let mNet = g - d;
+                
+                if (i < targetIndex) {
+                    runningBalance += mNet;
+                } else {
+                    devredenBakiye = runningBalance;
+                    buAyGelir = g;
+                    buAyGider = d;
+                }
+            }
+            
+            let toplamBakiye = devredenBakiye + buAyGelir - buAyGider;
+            return { devredenBakiye, buAyGelir, buAyGider, toplamBakiye };
+        }
+
         function renderView() {
             updateMonthDisplay();
             let container = document.getElementById('app-view');
             if(!container) return;
             let activeMonthStr = getActiveMonthString();
             
+            let fin = calculateMonthFinancials(activeMonthStr);
+            let gelirler = fin.buAyGelir;
+            let giderler = fin.buAyGider;
+            let devredenBakiye = fin.devredenBakiye;
+            let toplamBakiye = fin.toplamBakiye;
+            
             let monthTx = state.transactions.filter(t => t.date === activeMonthStr);
-            let gelirler = monthTx.filter(t => t.type === 'Gelir').reduce((a, b) => a + b.amount, 0);
-            let giderler = monthTx.filter(t => t.type === 'Gider' || t.type === 'Fon Yatırımı').reduce((a, b) => a + b.amount, 0);
-            
-            let toplamBakiye = gelirler - giderler;
-            
+
             let fonTotal = state.funds.currentBalance || 0;
             let principal = state.funds.principal !== undefined ? state.funds.principal : fonTotal;
             let prevBal = state.funds.previousBalance !== undefined ? state.funds.previousBalance : fonTotal;
@@ -442,19 +489,14 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div class="bg-gradient-to-br from-[#1c1c24] to-[#121217] bg-pattern p-4 sm:p-6 rounded-[24px] sm:rounded-[28px] border border-zinc-800/80 shadow-xl space-y-3">
                                 <div class="flex justify-between items-center">
-                                    <span class="text-[9px] sm:text-[10px] font-extrabold tracking-widest text-zinc-400 uppercase">NET KALAN · ${activeMonthStr.toUpperCase()}</span>
+                                    <span class="text-[9px] sm:text-[10px] font-extrabold tracking-widest text-zinc-400 uppercase">NET KALAN (DEVİRLİ) · ${activeMonthStr.toUpperCase()}</span>
                                 </div>
                                 <div class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight ${toplamBakiye < 0 ? 'text-red-400' : ''}">${toplamBakiye.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
                                 
-                                <div class="flex space-x-2 pt-0.5">
-                                    <div onclick="changeTab('income')" class="bg-[#121215]/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-zinc-800/60 flex items-center space-x-1.5 cursor-pointer">
-                                        <span class="text-[#10b981] font-bold text-xs">↓</span>
-                                        <span class="text-[11px] sm:text-xs font-bold text-[#10b981]">${gelirler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
-                                    </div>
-                                    <div onclick="changeTab('expense')" class="bg-[#121215]/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-zinc-800/60 flex items-center space-x-1.5 cursor-pointer">
-                                        <span class="text-[#ef4444] font-bold text-xs">↑</span>
-                                        <span class="text-[11px] sm:text-xs font-bold text-[#ef4444]">${giderler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
-                                    </div>
+                                <div class="space-y-1.5 pt-1 text-[11px] text-zinc-400 border-t border-zinc-800/60">
+                                    ${devredenBakiye !== 0 ? `<div class="flex justify-between"><span>Devreden Bakiye:</span><span class="${devredenBakiye < 0 ? 'text-red-400' : 'text-zinc-200'} font-bold">${devredenBakiye.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span></div>` : ''}
+                                    <div class="flex justify-between cursor-pointer hover:text-white" onclick="changeTab('income')"><span>Bu Ay Gelir:</span><span class="text-[#10b981] font-bold">+${gelirler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span></div>
+                                    <div class="flex justify-between cursor-pointer hover:text-white" onclick="changeTab('expense')"><span>Bu Ay Gider:</span><span class="text-[#ef4444] font-bold">-${giderler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span></div>
                                 </div>
                             </div>
 
@@ -758,11 +800,23 @@
 
             if(isNaN(newBalance) || isNaN(newPrincipal)) { alert('Lütfen geçerli tutarlar girin.'); return; }
 
-            state.funds.previousBalance = state.funds.currentBalance !== undefined ? state.funds.currentBalance : newBalance;
+            let todayStr = new Date().toISOString().split('T')[0];
+
+            if (!state.funds.lastDate || state.funds.lastDate !== todayStr) {
+                state.funds.previousBalance = state.funds.currentBalance !== undefined ? state.funds.currentBalance : newBalance;
+                state.funds.lastDate = todayStr;
+            } else {
+                if(state.funds.previousBalance === undefined) {
+                    state.funds.previousBalance = newBalance;
+                }
+            }
+
             state.funds.currentBalance = newBalance;
             state.funds.principal = newPrincipal;
 
-            saveState(); closeFundModal(); renderView();
+            saveState(); 
+            closeFundModal(); 
+            renderView();
         }
 
         function deleteTx(id) {
@@ -788,7 +842,7 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v24');
+                localStorage.removeItem('cep_butce_excel_v28');
                 location.reload();
             }
         }
