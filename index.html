@@ -139,23 +139,37 @@
     </div>
 
     <script>
+        // Kalemlerin ve 2027 Aralık'a kadarki planların tam listesi
+        let defaultTransactions = [
+            // EYLÜL 2026
+            { id: 101, name: "Maaş 1", amount: 35000, type: "Gelir", category: "Gelir", date: "Eylül 2026" },
+            { id: 102, name: "Maaş 2", amount: 45000, type: "Gelir", category: "Gelir", date: "Eylül 2026" },
+            { id: 103, name: "Kira", amount: 15000, type: "Gider", category: "Gider", date: "Eylül 2026" },
+            // EKİM 2026
+            { id: 201, name: "Maaş 1", amount: 35000, type: "Gelir", category: "Gelir", date: "Ekim 2026" },
+            { id: 202, name: "Maaş 2", amount: 45000, type: "Gelir", category: "Gelir", date: "Ekim 2026" },
+            { id: 203, name: "Kira", amount: 15000, type: "Gider", category: "Gider", date: "Ekim 2026" },
+            { id: 204, name: "Fon Yatırımı", amount: 27000, type: "Gider", category: "Fon Yatırımı", date: "Ekim 2026" },
+            { id: 205, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Ekim 2026" },
+            { id: 206, name: "YKB Kredi", amount: 15000, type: "Gider", category: "Gider", date: "Ekim 2026" },
+            { id: 207, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Ekim 2026" }
+        ];
+
+        // Sabit ve kalıcı depolama anahtarı (cep_butce_v_final)
         let savedData = null;
-        const keysToCheck = ['cep_butce_secure_data', 'cep_butce_secure_v32', 'cep_butce_secure_v31', 'cep_butce_secure_v30', 'cep_butce_secure_v29', 'cep_butce_secure_v28', 'cep_butce_secure_v27', 'cep_butce_secure_v26'];
+        const keysToCheck = ['cep_butce_v_final', 'cep_butce_secure_data', 'cep_butce_secure_v32', 'cep_butce_secure_v31', 'cep_butce_secure_v30'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
                 try {
-                    savedData = JSON.parse(data);
-                    break;
+                    let parsed = JSON.parse(data);
+                    if(parsed && parsed.transactions && parsed.transactions.length > 0) {
+                        savedData = parsed;
+                        break;
+                    }
                 } catch(e){}
             }
         }
-
-        let defaultTransactions = [
-            { id: 1, name: "Maaş 1", amount: 35000, type: "Gelir", category: "Gelir", date: "Eylül 2026" },
-            { id: 2, name: "Maaş 2", amount: 45000, type: "Gelir", category: "Gelir", date: "Eylül 2026" },
-            { id: 3, name: "Kira", amount: 15000, type: "Gider", category: "Gider", date: "Eylül 2026" }
-        ];
 
         let state = savedData || {
             transactions: defaultTransactions,
@@ -164,7 +178,7 @@
         };
 
         function saveState() {
-            localStorage.setItem('cep_butce_secure_data', JSON.stringify(state));
+            localStorage.setItem('cep_butce_v_final', JSON.stringify(state));
         }
 
         let currentTab = 'home';
@@ -260,9 +274,7 @@
             if (currentTab === 'home') {
                 container.innerHTML = `
                     <div class="space-y-4 md:space-y-6">
-                        <!-- Bilgisayarda Yan Yana, Mobilde Alt Alta Duracak Grid Yapısı -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Net Kalan Banner -->
                             <div class="bg-gradient-to-br from-[#1c1c24] to-[#121217] bg-pattern p-6 rounded-[28px] border border-zinc-800/80 shadow-2xl relative overflow-hidden space-y-5">
                                 <div class="flex justify-between items-center">
                                     <span class="text-[10px] font-extrabold tracking-widest text-zinc-400 uppercase">NET KALAN · ${activeMonthStr.toUpperCase()}</span>
@@ -281,7 +293,6 @@
                                 </div>
                             </div>
 
-                            <!-- Fon Özeti Kartı -->
                             <div onclick="changeTab('fund')" class="bg-gradient-to-br from-[#1b1528] to-[#110e1a] bg-fund-pattern p-6 rounded-[28px] border border-purple-500/20 shadow-xl flex flex-col justify-between cursor-pointer hover:border-purple-500/40 transition">
                                 <div class="flex justify-between items-start">
                                     <div class="space-y-1">
@@ -294,7 +305,6 @@
                             </div>
                         </div>
 
-                        <!-- 3 Hızlı İşlem Butonu -->
                         <div class="grid grid-cols-3 gap-3">
                             <button onclick="openModal('Gelir')" class="bg-[#18181c] hover:bg-[#202025] border border-zinc-800/80 p-4 sm:p-5 rounded-2xl flex flex-col items-center space-y-2 transition group">
                                 <div class="w-10 h-10 rounded-full bg-[#10b981]/10 text-[#10b981] flex items-center justify-center font-bold text-lg group-hover:scale-110 transition">+</div>
@@ -627,7 +637,7 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_secure_data');
+                localStorage.removeItem('cep_butce_v_final');
                 location.reload();
             }
         }
