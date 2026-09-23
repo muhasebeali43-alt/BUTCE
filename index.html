@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Canlı Senkron v23</title>
-    <!-- Tarayıcı ve Mobil Özel Simge (Favicon & App Icon) -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccff00'><path d='M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z'/></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccff00'><path d='M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z'/></svg>">
+    <title>CepteBütçe - Canlı Senkron v24</title>
+    <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccff00'><path d='M20 6V4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6h-2v6H6V6h14zm0 4V8h2v2h-2z'/></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ccff00'><path d='M20 6V4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6h-2v6H6V6h14zm0 4V8h2v2h-2z'/></svg>">
     
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -251,7 +251,7 @@
             { id: 1503, name: "Kira", amount: 27000, type: "Gider", category: "Gider", date: "Kasım 2027" },
             { id: 1504, name: "Fon Yatırımı", amount: 40000, type: "Gider", category: "Fon Yatırımı", date: "Kasım 2027" },
             { id: 1505, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Kasım 2027" },
-            { id: 1506, name: "YKB KRIDE", amount: 10000, type: "Gider", category: "Gider", date: "Kasım 2027" },
+            { id: 1506, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Kasım 2027" },
             { id: 1507, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Kasım 2027" },
             { id: 1601, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Aralık 2027" },
             { id: 1602, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Aralık 2027" },
@@ -263,7 +263,7 @@
         ];
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v23', 'cep_butce_excel_v22', 'cep_butce_excel_v21', 'cep_butce_excel_v20', 'cep_butce_excel_v19'];
+        const keysToCheck = ['cep_butce_excel_v24', 'cep_butce_excel_v23', 'cep_butce_excel_v22', 'cep_butce_excel_v21', 'cep_butce_excel_v20'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -290,7 +290,7 @@
         }
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
-        // Firebase Firestore Entegrasyonu (Simge Destekli v23)
+        // Firebase Firestore Entegrasyonu (Cüzdan Simge Destekli v24)
         const firebaseConfig = {
             apiKey: "AIzaSyCLxx02KpBH2MFGXEePIb-w79FVwOBW4GQ",
             authDomain: "butce-24f0f.firebaseapp.com",
@@ -317,7 +317,7 @@
                         if (cloudData && cloudData.lastUpdated && cloudData.lastUpdated > (state.lastUpdated || 0)) {
                             isSyncingFromCloud = true;
                             state = cloudData;
-                            localStorage.setItem('cep_butce_excel_v23', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v24', JSON.stringify(state));
                             renderView();
                             isSyncingFromCloud = false;
                         }
@@ -335,7 +335,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v23', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v24', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -732,14 +732,13 @@
             if(editingTxId !== null) {
                 let oldTx = state.transactions.find(t => t.id === editingTxId);
                 if(oldTx) {
-                    old_name = name;
                     oldTx.name = name;
                     oldTx.amount = amount;
                     oldTx.type = type;
                     oldTx.category = cat;
                 }
             } else {
-                state.transactions.push({ id: Date.now(), name, amount, type, category: cat, date: getActiveMonthString()});
+                state.transactions.push({ id: Date.now(), name, amount, type, category: cat, date: getActiveMonthString() });
             }
 
             saveState(); closeModal(); renderView();
@@ -789,7 +788,7 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v23');
+                localStorage.removeItem('cep_butce_excel_v24');
                 location.reload();
             }
         }
