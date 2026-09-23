@@ -16,7 +16,7 @@
 </head>
 <body class="flex justify-center items-center min-h-[100dvh] bg-[#0b0b0e] p-0 sm:p-6">
     
-    <!-- Responsive Ana Konteyner: Mobilde Tam Ekran, Bilgisayarda Şık Geniş Panel -->
+    <!-- Responsive Ana Konteyner -->
     <div class="w-full h-[100dvh] sm:h-[88vh] sm:max-w-4xl bg-[#0f0f12] sm:rounded-[32px] sm:border sm:border-zinc-800 flex flex-col relative overflow-hidden shadow-2xl">
         
         <!-- Şifre Kilit Ekranı -->
@@ -54,7 +54,7 @@
         <div class="absolute bottom-0 left-0 right-0 bg-[#121216]/95 backdrop-blur-md border-t border-zinc-800/80 px-4 py-2.5 flex justify-between items-center z-30 sm:rounded-b-[32px]">
             <button onclick="changeTab('home')" id="tab-home" class="flex flex-col items-center space-y-0.5 text-[#ccff00] transition flex-1">
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                <span class-[10px] font-semibold">Ana Sayfa</span>
+                <span class="text-[10px] font-semibold">Ana Sayfa</span>
             </button>
             <button onclick="changeTab('income')" id="tab-income" class="flex flex-col items-center space-y-0.5 text-zinc-500 hover:text-zinc-300 transition flex-1">
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m0-16l-4 4m4-4l4 4"></path></svg>
@@ -114,6 +114,10 @@
                     <label class="text-[11px] text-zinc-400 font-semibold mb-1 block">Güncel Toplam Fon Bakiyesi (₺)</label>
                     <input type="number" id="f-balance" placeholder="0.00" class="w-full bg-[#121215] border border-zinc-800 rounded-2xl p-3 text-white text-xs outline-none focus:border-[#8b5cf6]">
                 </div>
+                <div>
+                    <label class="text-[11px] text-zinc-400 font-semibold mb-1 block">Yatırılan Toplam Anapara / Maliyet (₺)</label>
+                    <input type="number" id="f-principal" placeholder="0.00" class="w-full bg-[#121215] border border-zinc-800 rounded-2xl p-3 text-white text-xs outline-none focus:border-[#8b5cf6]">
+                </div>
                 <button onclick="saveFundBalance()" class="w-full bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-bold py-3.5 rounded-2xl text-xs transition shadow-lg shadow-[#8b5cf6]/20">Bakiyeyi Güncelle</button>
             </div>
         </div>
@@ -140,7 +144,7 @@
 
     <script>
         let defaultTransactions = [
-            // EYLÜL 2026 (Sadece Fon Yatırımı)
+            // EYLÜL 2026
             { id: 101, name: "Fon Yatırımı", amount: 27000, type: "Gider", category: "Fon Yatırımı", date: "Eylül 2026" },
 
             // EKİM 2026
@@ -282,7 +286,7 @@
         ];
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v4', 'cep_butce_excel_v3', 'cep_butce_excel_v2'];
+        const keysToCheck = ['cep_butce_excel_v5', 'cep_butce_excel_v4', 'cep_butce_excel_v3'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -298,12 +302,18 @@
 
         let state = savedData || {
             transactions: defaultTransactions,
-            funds: { currentBalance: 782000, basePrincipal: 750000, previousBalance: 750000 },
+            funds: { currentBalance: 750000, principal: 750000, previousBalance: 750000 },
             pin: ""
         };
 
+        // Eğer fon objesi eksik veya eski formatlıysa güvenli değere çek
+        if(!state.funds || state.funds.principal === undefined) {
+            let bal = state.funds?.currentBalance || 750000;
+            state.funds = { currentBalance: bal, principal: bal, previousBalance: bal };
+        }
+
         function saveState() {
-            localStorage.setItem('cep_butce_excel_v4', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v5', JSON.stringify(state));
         }
 
         let currentTab = 'home';
@@ -391,10 +401,11 @@
             let toplamBakiye = gelirler - giderler;
             
             let fonTotal = state.funds.currentBalance || 0;
-            let basePrincipal = state.funds.basePrincipal || 750000;
+            let principal = state.funds.principal !== undefined ? state.funds.principal : fonTotal;
+            let prevBal = state.funds.previousBalance !== undefined ? state.funds.previousBalance : fonTotal;
 
-            let gunlukKar = fonTotal - (state.funds.previousBalance !== undefined ? state.funds.previousBalance : fonTotal);
-            let toplamKar = fonTotal - basePrincipal;
+            let gunlukKar = fonTotal - prevBal;
+            let toplamKar = fonTotal - principal;
 
             if (currentTab === 'home') {
                 container.innerHTML = `
@@ -409,11 +420,11 @@
                                 <div class="flex space-x-2 pt-0.5">
                                     <div onclick="changeTab('income')" class="bg-[#121215]/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-zinc-800/60 flex items-center space-x-1.5 cursor-pointer">
                                         <span class="text-[#10b981] font-bold text-xs">↓</span>
-                                        <span class-[11px] sm:text-xs font-bold text-[#10b981]">${gelirler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
+                                        <span class="text-[11px] sm:text-xs font-bold text-[#10b981]">${gelirler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
                                     </div>
                                     <div onclick="changeTab('expense')" class="bg-[#121215]/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-zinc-800/60 flex items-center space-x-1.5 cursor-pointer">
                                         <span class="text-[#ef4444] font-bold text-xs">↑</span>
-                                        <span class-[11px] sm:text-xs font-bold text-[#ef4444]">${giderler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
+                                        <span class="text-[11px] sm:text-xs font-bold text-[#ef4444]">${giderler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
                                     </div>
                                 </div>
                             </div>
@@ -433,15 +444,15 @@
                         <div class="grid grid-cols-3 gap-2.5 sm:gap-3">
                             <button onclick="openModal('Gelir')" class="bg-[#18181c] hover:bg-[#202025] border border-zinc-800/80 p-3.5 sm:p-5 rounded-2xl flex flex-col items-center space-y-1.5 transition group">
                                 <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#10b981]/10 text-[#10b981] flex items-center justify-center font-bold text-base sm:text-lg group-hover:scale-110 transition">+</div>
-                                <span class-[11px] sm:text-xs font-bold text-white">Gelir Ekle</span>
+                                <span class="text-[11px] sm:text-xs font-bold text-white">Gelir Ekle</span>
                             </button>
                             <button onclick="openModal('Gider')" class="bg-[#18181c] hover:bg-[#202025] border border-zinc-800/80 p-3.5 sm:p-5 rounded-2xl flex flex-col items-center space-y-1.5 transition group">
                                 <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#ef4444]/10 text-[#ef4444] flex items-center justify-center font-bold text-base sm:text-lg group-hover:scale-110 transition">-</div>
-                                <span class-[11px] sm:text-xs font-bold text-white">Gider Ekle</span>
+                                <span class="text-[11px] sm:text-xs font-bold text-white">Gider Ekle</span>
                             </button>
                             <button onclick="changeTab('fund')" class="bg-[#18181c] hover:bg-[#202025] border border-zinc-800/80 p-3.5 sm:p-5 rounded-2xl flex flex-col items-center space-y-1.5 transition group">
                                 <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#8b5cf6]/10 text-[#8b5cf6] flex items-center justify-center text-sm sm:text-base group-hover:scale-110 transition">📊</div>
-                                <span class-[11px] sm:text-xs font-bold text-white">Fon Yönet</span>
+                                <span class="text-[11px] sm:text-xs font-bold text-white">Fon Yönet</span>
                             </button>
                         </div>
                     </div>
@@ -465,8 +476,8 @@
                                 gelirList.map(t => `
                                     <div class="bg-[#18181c] border border-zinc-800/60 p-3.5 rounded-2xl flex justify-between items-center">
                                         <div>
-                                            <div class="font-bold text-xs sm:text-sm text-white">${t.name} <span class-[10px] text-zinc-400 font-normal">(${t.category})</span></div>
-                                            <div class-[10px] text-zinc-400 mt-0.5">${t.date}</div>
+                                            <div class="font-bold text-xs sm:text-sm text-white">${t.name} <span class="text-[10px] text-zinc-400 font-normal">(${t.category})</span></div>
+                                            <div class="text-[10px] text-zinc-400 mt-0.5">${t.date}</div>
                                         </div>
                                         <div class="flex items-center space-x-2">
                                             <span class="font-bold text-xs sm:text-sm text-[#10b981]">+${t.amount.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
@@ -497,8 +508,8 @@
                                 giderList.map(t => `
                                     <div class="bg-[#18181c] border border-zinc-800/60 p-3.5 rounded-2xl flex justify-between items-center">
                                         <div>
-                                            <div class="font-bold text-xs sm:text-sm text-white">${t.name} <span class-[10px] text-zinc-400 font-normal">(${t.category})</span></div>
-                                            <div class-[10px] text-zinc-400 mt-0.5">${t.date}</div>
+                                            <div class="font-bold text-xs sm:text-sm text-white">${t.name} <span class="text-[10px] text-zinc-400 font-normal">(${t.category})</span></div>
+                                            <div class="text-[10px] text-zinc-400 mt-0.5">${t.date}</div>
                                         </div>
                                         <div class="flex items-center space-x-2">
                                             <span class="font-bold text-xs sm:text-sm text-[#ef4444]">-${t.amount.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
@@ -528,14 +539,14 @@
                                     <div class="text-xs sm:text-sm font-bold ${gunlukKar >= 0 ? 'text-emerald-400' : 'text-red-400'} mt-0.5">${gunlukKar >= 0 ? '+' : ''}${gunlukKar.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
                                 </div>
                                 <div class="bg-[#121215]/60 p-3 rounded-2xl border border-purple-500/10">
-                                    <div class="text-[9px] font-bold text-zinc-400">TOPLAM KÂR</div>
+                                    <div class="text-[9px] font-bold text-zinc-400">TOPLAM KÂR (ANAPARA: ${principal.toLocaleString('tr-TR')} ₺)</div>
                                     <div class="text-xs sm:text-sm font-bold ${toplamKar >= 0 ? 'text-emerald-400' : 'text-red-400'} mt-0.5">${toplamKar >= 0 ? '+' : ''}${toplamKar.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
                                 </div>
                             </div>
                         </div>
 
                         <button onclick="openFundModal()" class="w-full bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-bold py-3.5 rounded-2xl text-xs transition shadow-lg shadow-[#8b5cf6]/20 flex items-center justify-center space-x-2">
-                            <span>📝 Fon Bakiyesini Güncelle</span>
+                            <span>📝 Fon Bakiyesini / Maliyetini Güncelle</span>
                         </button>
                     </div>
                 `;
@@ -613,8 +624,8 @@
                 monthTx.map(t => `
                     <div class="bg-[#121215] border border-zinc-800/80 p-3 rounded-2xl flex justify-between items-center">
                         <div>
-                            <div class="text-[11px] text-white font-bold">${t.name} <span class-[9px] text-zinc-400">(${t.category})</span></div>
-                            <div class-[9px] text-zinc-400 mt-0.5">${t.type} · ${t.date}</div>
+                            <div class="text-[11px] text-white font-bold">${t.name} <span class="text-[9px] text-zinc-400">(${t.category})</span></div>
+                            <div class="text-[9px] text-zinc-400 mt-0.5">${t.type} · ${t.date}</div>
                         </div>
                         <div class="flex items-center space-x-1.5">
                             <span class="text-[11px] font-bold ${t.type === 'Gelir' ? 'text-[#10b981]' : 'text-[#ef4444]'}">${t.type === 'Gelir' ? '+' : '-'}${t.amount.toLocaleString('tr-TR')} ₺</span>
@@ -685,30 +696,8 @@
 
             if(!name || isNaN(amount)) { alert('Lütfen geçerli bir isim ve tutar girin.'); return; }
 
-            let oldTx = editingTxId !== null ? state.transactions.find(t => t.id === editingTxId) : null;
-            let oldAmount = oldTx ? oldTx.amount : 0;
-            let oldCat = oldTx ? oldTx.category : '';
-
-            if(oldTx) {
-                if(oldCat === 'Fon Yatırımı') {
-                    state.funds.basePrincipal -= oldAmount;
-                    state.funds.currentBalance -= oldAmount;
-                }
-                if(oldCat === 'Fondan Çek') {
-                    state.funds.basePrincipal += oldAmount;
-                    state.funds.currentBalance += oldAmount;
-                }
-            }
-
-            if(cat === 'Fon Yatırımı') {
-                state.funds.basePrincipal += amount;
-                state.funds.currentBalance += amount;
-            } else if(cat === 'Fondan Çek') {
-                state.funds.basePrincipal -= amount;
-                state.funds.currentBalance -= amount;
-            }
-
             if(editingTxId !== null) {
+                let oldTx = state.transactions.find(t => t.id === editingTxId);
                 if(oldTx) {
                     oldTx.name = name;
                     oldTx.amount = amount;
@@ -724,6 +713,7 @@
 
         function openFundModal() {
             document.getElementById('f-balance').value = state.funds.currentBalance || '';
+            document.getElementById('f-principal').value = state.funds.principal !== undefined ? state.funds.principal : (state.funds.currentBalance || '');
             document.getElementById('fund-modal').style.display = 'flex';
         }
 
@@ -731,26 +721,18 @@
 
         function saveFundBalance() {
             let newBalance = parseFloat(document.getElementById('f-balance').value);
-            if(isNaN(newBalance)) { alert('Lütfen geçerli bir bakiye tutarı girin.'); return; }
+            let newPrincipal = parseFloat(document.getElementById('f-principal').value);
 
-            state.funds.previousBalance = state.funds.currentBalance || newBalance;
+            if(isNaN(newBalance) || isNaN(newPrincipal)) { alert('Lütfen geçerli tutarlar girin.'); return; }
+
+            state.funds.previousBalance = state.funds.currentBalance !== undefined ? state.funds.currentBalance : newBalance;
             state.funds.currentBalance = newBalance;
+            state.funds.principal = newPrincipal;
 
             saveState(); closeFundModal(); renderView();
         }
 
         function deleteTx(id) {
-            let tx = state.transactions.find(t => t.id === id);
-            if(tx) {
-                if(tx.category === 'Fon Yatırımı') {
-                    state.funds.basePrincipal -= tx.amount;
-                    state.funds.currentBalance -= tx.amount;
-                }
-                if(tx.category === 'Fondan Çek') {
-                    state.funds.basePrincipal += tx.amount;
-                    state.funds.currentBalance += tx.amount;
-                }
-            }
             state.transactions = state.transactions.filter(t => t.id !== id);
             saveState(); renderView();
         }
@@ -762,7 +744,7 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v4');
+                localStorage.removeItem('cep_butce_excel_v5');
                 location.reload();
             }
         }
