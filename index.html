@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Canlı Senkron v28</title>
+    <title>CepteBütçe - Canlı Senkron v29</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
@@ -21,10 +21,10 @@
         .bg-fund-pattern { background-image: radial-gradient(rgba(139, 92, 246, 0.15) 1px, transparent 1px); background-size: 20px 20px; }
     </style>
 </head>
-<body class="flex justify-center items-center min-h-[100dvh] bg-[#0b0b0e] p-0 sm:p-6">
+<body class="flex justify-center items-center min-h-[100dvh] bg-[#0b0b0e] p-0 sm:p-4">
     
     <!-- Responsive Ana Konteyner -->
-    <div class="w-full h-[100dvh] sm:h-[88vh] sm:max-w-4xl bg-[#0f0f12] sm:rounded-[32px] sm:border sm:border-zinc-800 flex flex-col relative overflow-hidden shadow-2xl">
+    <div class="w-full h-[100dvh] sm:h-[90vh] sm:max-w-4xl bg-[#0f0f12] sm:rounded-[32px] sm:border sm:border-zinc-800 flex flex-col relative overflow-hidden shadow-2xl">
         
         <!-- Şifre Kilit Ekranı -->
         <div id="lock-screen" class="absolute inset-0 bg-[#0f0f12] z-50 flex flex-col justify-center items-center p-6 space-y-6 hidden">
@@ -40,7 +40,7 @@
         </div>
 
         <!-- Üst Ay Seçim Barı -->
-        <div class="px-4 sm:px-6 pt-3 pb-2.5 flex justify-between items-center bg-[#0f0f12] z-20 border-b border-zinc-800/40">
+        <div class="px-4 sm:px-6 pt-3.5 pb-3 flex justify-between items-center bg-[#0f0f12] z-20 border-b border-zinc-800/40">
             <div class="flex items-center space-x-2">
                 <div class="w-2.5 h-2.5 rounded-full bg-[#ccff00]"></div>
                 <span class="text-xs sm:text-sm font-extrabold tracking-wide text-white">CepteBütçe</span>
@@ -263,7 +263,7 @@
         ];
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v28', 'cep_butce_excel_v27', 'cep_butce_excel_v26', 'cep_butce_excel_v25', 'cep_butce_excel_v24'];
+        const keysToCheck = ['cep_butce_excel_v29', 'cep_butce_excel_v28', 'cep_butce_excel_v27', 'cep_butce_excel_v26', 'cep_butce_excel_v25'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -290,7 +290,7 @@
         }
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
-        // Firebase Firestore Entegrasyonu (v28 - Devirli Bakiye)
+        // Firebase Firestore Entegrasyonu (v29 - Tam Uyumlu)
         const firebaseConfig = {
             apiKey: "AIzaSyCLxx02KpBH2MFGXEePIb-w79FVwOBW4GQ",
             authDomain: "butce-24f0f.firebaseapp.com",
@@ -317,7 +317,7 @@
                         if (cloudData && cloudData.lastUpdated && cloudData.lastUpdated > (state.lastUpdated || 0)) {
                             isSyncingFromCloud = true;
                             state = cloudData;
-                            localStorage.setItem('cep_butce_excel_v28', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v29', JSON.stringify(state));
                             renderView();
                             isSyncingFromCloud = false;
                         }
@@ -335,7 +335,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v28', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v29', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -485,45 +485,45 @@
 
             if (currentTab === 'home') {
                 container.innerHTML = `
-                    <div class="space-y-3 sm:space-y-5">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                            <div class="bg-gradient-to-br from-[#1c1c24] to-[#121217] bg-pattern p-4 sm:p-6 rounded-[24px] sm:rounded-[28px] border border-zinc-800/80 shadow-xl space-y-3">
+                    <div class="space-y-4 max-w-4xl mx-auto">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-gradient-to-br from-[#1c1c24] to-[#121217] bg-pattern p-5 sm:p-6 rounded-[28px] border border-zinc-800/80 shadow-xl space-y-3">
                                 <div class="flex justify-between items-center">
-                                    <span class="text-[9px] sm:text-[10px] font-extrabold tracking-widest text-zinc-400 uppercase">NET KALAN (DEVİRLİ) · ${activeMonthStr.toUpperCase()}</span>
+                                    <span class="text-[10px] font-extrabold tracking-widest text-zinc-400 uppercase">NET KALAN (DEVİRLİ) · ${activeMonthStr.toUpperCase()}</span>
                                 </div>
-                                <div class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight ${toplamBakiye < 0 ? 'text-red-400' : ''}">${toplamBakiye.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
+                                <div class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight ${toplamBakiye < 0 ? 'text-red-400' : ''}">${toplamBakiye.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
                                 
-                                <div class="space-y-1.5 pt-1 text-[11px] text-zinc-400 border-t border-zinc-800/60">
+                                <div class="space-y-1.5 pt-2 text-xs text-zinc-300 border-t border-zinc-800/60">
                                     ${devredenBakiye !== 0 ? `<div class="flex justify-between"><span>Devreden Bakiye:</span><span class="${devredenBakiye < 0 ? 'text-red-400' : 'text-zinc-200'} font-bold">${devredenBakiye.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span></div>` : ''}
                                     <div class="flex justify-between cursor-pointer hover:text-white" onclick="changeTab('income')"><span>Bu Ay Gelir:</span><span class="text-[#10b981] font-bold">+${gelirler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span></div>
                                     <div class="flex justify-between cursor-pointer hover:text-white" onclick="changeTab('expense')"><span>Bu Ay Gider:</span><span class="text-[#ef4444] font-bold">-${giderler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span></div>
                                 </div>
                             </div>
 
-                            <div onclick="changeTab('fund')" class="bg-gradient-to-br from-[#1b1528] to-[#110e1a] bg-fund-pattern p-4 sm:p-6 rounded-[24px] sm:rounded-[28px] border border-purple-500/20 shadow-xl flex flex-col justify-between cursor-pointer hover:border-purple-500/40 transition">
+                            <div onclick="changeTab('fund')" class="bg-gradient-to-br from-[#1b1528] to-[#110e1a] bg-fund-pattern p-5 sm:p-6 rounded-[28px] border border-purple-500/20 shadow-xl flex flex-col justify-between cursor-pointer hover:border-purple-500/40 transition">
                                 <div class="flex justify-between items-start">
                                     <div class="space-y-1">
-                                        <div class="text-[9px] sm:text-[10px] font-extrabold tracking-widest text-purple-400 uppercase">YATIRIM FONLARI TOPLAMI</div>
-                                        <div class="text-2xl sm:text-4xl font-extrabold text-white">${fonTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
+                                        <div class="text-[10px] font-extrabold tracking-widest text-purple-400 uppercase">YATIRIM FONLARI TOPLAMI</div>
+                                        <div class="text-3xl sm:text-4xl font-extrabold text-white">${fonTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
                                     </div>
-                                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-lg sm:text-xl font-bold">📈</div>
+                                    <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center text-xl font-bold">📈</div>
                                 </div>
-                                <div class="text-[11px] sm:text-xs ${toplamKar >= 0 ? 'text-emerald-400' : 'text-red-400'} font-semibold mt-3">${toplamKar >= 0 ? '+' : ''}${toplamKar.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺ Toplam Kâr</div>
+                                <div class="text-xs ${toplamKar >= 0 ? 'text-emerald-400' : 'text-red-400'} font-semibold mt-4">${toplamKar >= 0 ? '+' : ''}${toplamKar.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺ Toplam Kâr</div>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-3 gap-2.5 sm:gap-3">
-                            <button onclick="openModal('Gelir')" class="bg-[#18181c] hover:bg-[#202025] border border-zinc-800/80 p-3.5 sm:p-5 rounded-2xl flex flex-col items-center space-y-1.5 transition group">
-                                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#10b981]/10 text-[#10b981] flex items-center justify-center font-bold text-base sm:text-lg group-hover:scale-110 transition">+</div>
-                                <span class="text-[11px] sm:text-xs font-bold text-white">Gelir Ekle</span>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button onclick="openModal('Gelir')" class="bg-[#18181c] hover:bg-[#202025] border border-zinc-800/80 p-4 sm:p-5 rounded-2xl flex flex-col items-center space-y-2 transition group">
+                                <div class="w-10 h-10 rounded-full bg-[#10b981]/10 text-[#10b981] flex items-center justify-center font-bold text-lg group-hover:scale-110 transition">+</div>
+                                <span class="text-xs font-bold text-white">Gelir Ekle</span>
                             </button>
-                            <button onclick="openModal('Gider')" class="bg-[#18181c] hover:bg-[#202025] border border-zinc-800/80 p-3.5 sm:p-5 rounded-2xl flex flex-col items-center space-y-1.5 transition group">
-                                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#ef4444]/10 text-[#ef4444] flex items-center justify-center font-bold text-base sm:text-lg group-hover:scale-110 transition">-</div>
-                                <span class="text-[11px] sm:text-xs font-bold text-white">Gider Ekle</span>
+                            <button onclick="openModal('Gider')" class="bg-[#18181c] hover:bg-[#202025] border border-zinc-800/80 p-4 sm:p-5 rounded-2xl flex flex-col items-center space-y-2 transition group">
+                                <div class="w-10 h-10 rounded-full bg-[#ef4444]/10 text-[#ef4444] flex items-center justify-center font-bold text-lg group-hover:scale-110 transition">-</div>
+                                <span class="text-xs font-bold text-white">Gider Ekle</span>
                             </button>
-                            <button onclick="changeTab('fund')" class="bg-[#18181c] hover:bg-[#202025] border border-zinc-800/80 p-3.5 sm:p-5 rounded-2xl flex flex-col items-center space-y-1.5 transition group">
-                                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#8b5cf6]/10 text-[#8b5cf6] flex items-center justify-center text-sm sm:text-base group-hover:scale-110 transition">📊</div>
-                                <span class="text-[11px] sm:text-xs font-bold text-white">Fon Yönet</span>
+                            <button onclick="changeTab('fund')" class="bg-[#18181c] hover:bg-[#202025] border border-zinc-800/80 p-4 sm:p-5 rounded-2xl flex flex-col items-center space-y-2 transition group">
+                                <div class="w-10 h-10 rounded-full bg-[#8b5cf6]/10 text-[#8b5cf6] flex items-center justify-center text-base group-hover:scale-110 transition">📊</div>
+                                <span class="text-xs font-bold text-white">Fon Yönet</span>
                             </button>
                         </div>
                     </div>
@@ -531,29 +531,29 @@
             } else if (currentTab === 'income') {
                 let gelirList = monthTx.filter(t => t.type === 'Gelir');
                 container.innerHTML = `
-                    <div class="space-y-3">
+                    <div class="space-y-4 max-w-4xl mx-auto">
                         <div class="flex justify-between items-center">
-                            <h2 class="text-sm sm:text-lg font-bold text-white">Gelirler (${activeMonthStr})</h2>
-                            <button onclick="openModal('Gelir')" class="bg-[#10b981]/10 text-[#10b981] font-bold px-3 py-1.5 rounded-xl text-[11px] border border-[#10b981]/20">+ Gelir Ekle</button>
+                            <h2 class="text-base sm:text-lg font-bold text-white">Gelirler (${activeMonthStr})</h2>
+                            <button onclick="openModal('Gelir')" class="bg-[#10b981]/10 text-[#10b981] font-bold px-4 py-2 rounded-xl text-xs border border-[#10b981]/25">+ Gelir Ekle</button>
                         </div>
 
-                        <div class="bg-gradient-to-br from-[#0d281e] to-[#121217] p-4 rounded-2xl border border-[#10b981]/30 shadow-lg space-y-1">
-                            <div class="text-[9px] font-extrabold tracking-widest text-[#10b981] uppercase">TOPLAM AYLIK GELİR</div>
-                            <div class="text-xl sm:text-2xl font-extrabold text-white">${gelirler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
+                        <div class="bg-gradient-to-br from-[#0d281e] to-[#121217] p-5 rounded-2xl border border-[#10b981]/30 shadow-lg space-y-1">
+                            <div class="text-[10px] font-extrabold tracking-widest text-[#10b981] uppercase">TOPLAM AYLIK GELİR</div>
+                            <div class="text-2xl sm:text-3xl font-extrabold text-white">${gelirler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             ${gelirList.length === 0 ? '<p class="text-zinc-500 text-xs text-center py-8 col-span-2">Bu ay için girilmiş gelir bulunmuyor.</p>' : 
                                 gelirList.map(t => `
-                                    <div class="bg-[#18181c] border border-zinc-800/60 p-3.5 rounded-2xl flex justify-between items-center">
+                                    <div class="bg-[#18181c] border border-zinc-800/70 p-4 rounded-2xl flex justify-between items-center">
                                         <div>
-                                            <div class="font-bold text-xs sm:text-sm text-white">${t.name} <span class="text-[10px] text-zinc-400 font-normal">(${t.category})</span></div>
-                                            <div class="text-[10px] text-zinc-400 mt-0.5">${t.date}</div>
+                                            <div class="font-bold text-sm text-white">${t.name} <span class="text-xs text-zinc-400 font-normal">(${t.category})</span></div>
+                                            <div class="text-[11px] text-zinc-400 mt-0.5">${t.date}</div>
                                         </div>
-                                        <div class="flex items-center space-x-2">
-                                            <span class="font-bold text-xs sm:text-sm text-[#10b981]">+${t.amount.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
-                                            <button onclick="openEditModal(${t.id})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-1 rounded-lg text-[10px] font-semibold">Düzenle</button>
-                                            <button onclick="deleteTx(${t.id})" class="w-6 h-6 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-[10px] font-bold">✕</button>
+                                        <div class="flex items-center space-x-2.5">
+                                            <span class="font-bold text-sm text-[#10b981]">+${t.amount.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
+                                            <button onclick="openEditModal(${t.id})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1 rounded-lg text-xs font-semibold">Düzenle</button>
+                                            <button onclick="deleteTx(${t.id})" class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-xs font-bold">✕</button>
                                         </div>
                                     </div>
                                 `).join('')}
@@ -563,29 +563,29 @@
             } else if (currentTab === 'expense') {
                 let giderList = monthTx.filter(t => t.type === 'Gider' || t.type === 'Fon Yatırımı');
                 container.innerHTML = `
-                    <div class="space-y-3">
+                    <div class="space-y-4 max-w-4xl mx-auto">
                         <div class="flex justify-between items-center">
-                            <h2 class="text-sm sm:text-lg font-bold text-white">Giderler (${activeMonthStr})</h2>
-                            <button onclick="openModal('Gider')" class="bg-[#ef4444]/10 text-[#ef4444] font-bold px-3 py-1.5 rounded-xl text-[11px] border border-[#ef4444]/20">+ Gider Ekle</button>
+                            <h2 class="text-base sm:text-lg font-bold text-white">Giderler (${activeMonthStr})</h2>
+                            <button onclick="openModal('Gider')" class="bg-[#ef4444]/10 text-[#ef4444] font-bold px-4 py-2 rounded-xl text-xs border border-[#ef4444]/25">+ Gider Ekle</button>
                         </div>
 
-                        <div class="bg-gradient-to-br from-[#2a1215] to-[#121217] p-4 rounded-2xl border border-[#ef4444]/30 shadow-lg space-y-1">
-                            <div class="text-[9px] font-extrabold tracking-widest text-[#ef4444] uppercase">TOPLAM AYLIK GİDER</div>
-                            <div class="text-xl sm:text-2xl font-extrabold text-white">${giderler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
+                        <div class="bg-gradient-to-br from-[#2a1215] to-[#121217] p-5 rounded-2xl border border-[#ef4444]/30 shadow-lg space-y-1">
+                            <div class="text-[10px] font-extrabold tracking-widest text-[#ef4444] uppercase">TOPLAM AYLIK GİDER</div>
+                            <div class="text-2xl sm:text-3xl font-extrabold text-white">${giderler.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             ${giderList.length === 0 ? '<p class="text-zinc-500 text-xs text-center py-8 col-span-2">Bu ay için girilmiş gider bulunmuyor.</p>' : 
                                 giderList.map(t => `
-                                    <div class="bg-[#18181c] border border-zinc-800/60 p-3.5 rounded-2xl flex justify-between items-center">
+                                    <div class="bg-[#18181c] border border-zinc-800/70 p-4 rounded-2xl flex justify-between items-center">
                                         <div>
-                                            <div class="font-bold text-xs sm:text-sm text-white">${t.name} <span class="text-[10px] text-zinc-400 font-normal">(${t.category})</span></div>
-                                            <div class="text-[10px] text-zinc-400 mt-0.5">${t.date}</div>
+                                            <div class="font-bold text-sm text-white">${t.name} <span class="text-xs text-zinc-400 font-normal">(${t.category})</span></div>
+                                            <div class="text-[11px] text-zinc-400 mt-0.5">${t.date}</div>
                                         </div>
-                                        <div class="flex items-center space-x-2">
-                                            <span class="font-bold text-xs sm:text-sm text-[#ef4444]">-${t.amount.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
-                                            <button onclick="openEditModal(${t.id})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-1 rounded-lg text-[10px] font-semibold">Düzenle</button>
-                                            <button onclick="deleteTx(${t.id})" class="w-6 h-6 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-[10px] font-bold">✕</button>
+                                        <div class="flex items-center space-x-2.5">
+                                            <span class="font-bold text-sm text-[#ef4444]">-${t.amount.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</span>
+                                            <button onclick="openEditModal(${t.id})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1 rounded-lg text-xs font-semibold">Düzenle</button>
+                                            <button onclick="deleteTx(${t.id})" class="w-7 h-7 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-xs font-bold">✕</button>
                                         </div>
                                     </div>
                                 `).join('')}
@@ -595,28 +595,28 @@
             } else if (currentTab === 'fund') {
                 container.innerHTML = `
                     <div class="space-y-4 max-w-xl mx-auto">
-                        <h2 class="text-sm sm:text-lg font-bold text-white">Yatırım Fonu Yönetimi</h2>
+                        <h2 class="text-base sm:text-lg font-bold text-white">Yatırım Fonu Yönetimi</h2>
                         
-                        <div class="bg-gradient-to-br from-[#1b1528] to-[#110e1a] bg-fund-pattern p-5 sm:p-7 rounded-[24px] sm:rounded-[28px] border border-purple-500/30 shadow-xl space-y-4">
+                        <div class="bg-gradient-to-br from-[#1b1528] to-[#110e1a] bg-fund-pattern p-6 sm:p-7 rounded-[28px] border border-purple-500/30 shadow-xl space-y-5">
                             <div class="flex justify-between items-center">
-                                <div class="text-[9px] sm:text-[10px] font-extrabold tracking-widest text-purple-400 uppercase">GÜNCEL TOPLAM FON BAKİYESİ</div>
-                                <button onclick="openFundModal()" class="w-7 h-7 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 flex items-center justify-center text-xs font-bold transition">✏️</button>
+                                <div class="text-[10px] font-extrabold tracking-widest text-purple-400 uppercase">GÜNCEL TOPLAM FON BAKİYESİ</div>
+                                <button onclick="openFundModal()" class="w-8 h-8 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 flex items-center justify-center text-xs font-bold transition">✏️</button>
                             </div>
-                            <div class="text-2xl sm:text-4xl font-extrabold text-white">${fonTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
+                            <div class="text-3xl sm:text-4xl font-extrabold text-white">${fonTotal.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
                             
-                            <div class="grid grid-cols-2 gap-3 pt-2 border-t border-purple-500/20">
-                                <div class="bg-[#121215]/60 p-3 rounded-2xl border border-purple-500/10">
-                                    <div class="text-[9px] font-bold text-zinc-400">GÜNLÜK KÂR</div>
-                                    <div class="text-xs sm:text-sm font-bold ${gunlukKar >= 0 ? 'text-emerald-400' : 'text-red-400'} mt-0.5">${gunlukKar >= 0 ? '+' : ''}${gunlukKar.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
+                            <div class="grid grid-cols-2 gap-3 pt-3 border-t border-purple-500/20">
+                                <div class="bg-[#121215]/60 p-3.5 rounded-2xl border border-purple-500/10">
+                                    <div class="text-[10px] font-bold text-zinc-400">GÜNLÜK KÂR</div>
+                                    <div class="text-sm font-bold ${gunlukKar >= 0 ? 'text-emerald-400' : 'text-red-400'} mt-1">${gunlukKar >= 0 ? '+' : ''}${gunlukKar.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
                                 </div>
-                                <div class="bg-[#121215]/60 p-3 rounded-2xl border border-purple-500/10">
-                                    <div class="text-[9px] font-bold text-zinc-400">TOPLAM KÂR (ANAPARA: ${principal.toLocaleString('tr-TR')} ₺)</div>
-                                    <div class="text-xs sm:text-sm font-bold ${toplamKar >= 0 ? 'text-emerald-400' : 'text-red-400'} mt-0.5">${toplamKar >= 0 ? '+' : ''}${toplamKar.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
+                                <div class="bg-[#121215]/60 p-3.5 rounded-2xl border border-purple-500/10">
+                                    <div class="text-[10px] font-bold text-zinc-400">TOPLAM KÂR (ANAPARA: ${principal.toLocaleString('tr-TR')} ₺)</div>
+                                    <div class="text-sm font-bold ${toplamKar >= 0 ? 'text-emerald-400' : 'text-red-400'} mt-1">${toplamKar >= 0 ? '+' : ''}${toplamKar.toLocaleString('tr-TR', {minimumFractionDigits: 2})} ₺</div>
                                 </div>
                             </div>
                         </div>
 
-                        <button onclick="openFundModal()" class="w-full bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-bold py-3.5 rounded-2xl text-xs transition shadow-lg shadow-[#8b5cf6]/20 flex items-center justify-center space-x-2">
+                        <button onclick="openFundModal()" class="w-full bg-[#8b5cf6] hover:bg-[#7c3aed] text-white font-bold py-4 rounded-2xl text-xs transition shadow-lg shadow-[#8b5cf6]/20 flex items-center justify-center space-x-2">
                             <span>📝 Fon Bakiyesini / Maliyetini Güncelle</span>
                         </button>
                     </div>
@@ -624,30 +624,30 @@
             } else if (currentTab === 'settings') {
                 container.innerHTML = `
                     <div class="max-w-xl mx-auto space-y-4">
-                        <h2 class="text-sm sm:text-lg font-bold text-white mb-2">Ayarlar & Sistem</h2>
-                        <div class="bg-[#18181c] border border-zinc-800/60 rounded-3xl p-5 space-y-5">
+                        <h2 class="text-base sm:text-lg font-bold text-white mb-2">Ayarlar & Sistem</h2>
+                        <div class="bg-[#18181c] border border-zinc-800/70 rounded-3xl p-6 space-y-5">
                             
-                            <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold flex items-center space-x-2">
-                                <span>🟢 Firebase Canlı Bağlantı Aktif (Otomatik)</span>
+                            <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold flex items-center space-x-2">
+                                <span>🟢 Firebase Canlı Bağlantı Aktif (Otomatik Senkron)</span>
                             </div>
 
                             <div class="space-y-2.5 pb-4 border-b border-zinc-800">
-                                <span class="text-xs sm:text-sm font-bold text-white block">Uygulama Şifresi</span>
+                                <span class="text-sm font-bold text-white block">Uygulama Şifresi</span>
                                 <div class="flex space-x-2">
-                                    <input type="password" id="setting-pin" placeholder="${state.pin ? 'Yeni şifre' : 'Şifre koy'}" maxlength="6" class="flex-1 bg-[#121215] border border-zinc-800 rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#ccff00]">
-                                    <button onclick="savePinSetting()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-3.5 py-2.5 rounded-xl text-xs">Kaydet</button>
+                                    <input type="password" id="setting-pin" placeholder="${state.pin ? 'Yeni şifre' : 'Şifre koy'}" maxlength="6" class="flex-1 bg-[#121215] border border-zinc-800 rounded-xl p-3 text-white text-xs outline-none focus:border-[#ccff00]">
+                                    <button onclick="savePinSetting()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold px-4 py-3 rounded-xl text-xs">Kaydet</button>
                                 </div>
-                                ${state.pin ? '<button onclick="removePin()" class="text-red-400 text-[11px] font-semibold hover:underline">Şifreyi Kaldır</button>' : ''}
+                                ${state.pin ? '<button onclick="removePin()" class="text-red-400 text-xs font-semibold hover:underline">Şifreyi Kaldır</button>' : ''}
                             </div>
 
                             <div class="flex justify-between items-center py-2 border-b border-zinc-800">
-                                <span class="text-xs sm:text-sm font-medium text-white">Dönem Hareketleri (Tüm Aylar)</span>
-                                <button onclick="openLogModal()" class="bg-purple-500/10 text-purple-400 text-[11px] font-bold px-3.5 py-2 rounded-xl">Yönet / Gör</button>
+                                <span class="text-sm font-medium text-white">Dönem Hareketleri (Tüm Aylar)</span>
+                                <button onclick="openLogModal()" class="bg-purple-500/10 text-purple-400 text-xs font-bold px-4 py-2.5 rounded-xl">Yönet / Gör</button>
                             </div>
 
                             <div class="flex justify-between items-center py-2">
-                                <span class="text-xs sm:text-sm font-medium text-white">Tablo Verilerini Sıfırla</span>
-                                <button onclick="resetData()" class="bg-red-500/10 text-red-400 text-[11px] font-bold px-3.5 py-2 rounded-xl">Sıfırla</button>
+                                <span class="text-sm font-medium text-white">Tablo Verilerini Sıfırla</span>
+                                <button onclick="resetData()" class="bg-red-500/10 text-red-400 text-xs font-bold px-4 py-2.5 rounded-xl">Sıfırla</button>
                             </div>
                         </div>
                     </div>
@@ -697,15 +697,15 @@
 
             listEl.innerHTML = monthTx.length === 0 ? '<p class="text-zinc-500 text-xs text-center py-8">Bu dönem için kayıtlı hareket bulunmuyor.</p>' :
                 monthTx.map(t => `
-                    <div class="bg-[#121215] border border-zinc-800/80 p-3 rounded-2xl flex justify-between items-center">
+                    <div class="bg-[#121215] border border-zinc-800/80 p-3.5 rounded-2xl flex justify-between items-center">
                         <div>
-                            <div class="text-[11px] text-white font-bold">${t.name} <span class="text-[9px] text-zinc-400">(${t.category})</span></div>
-                            <div class="text-[9px] text-zinc-400 mt-0.5">${t.type} · ${t.date}</div>
+                            <div class="text-xs text-white font-bold">${t.name} <span class="text-[10px] text-zinc-400">(${t.category})</span></div>
+                            <div class="text-[10px] text-zinc-400 mt-0.5">${t.type} · ${t.date}</div>
                         </div>
-                        <div class="flex items-center space-x-1.5">
-                            <span class="text-[11px] font-bold ${t.type === 'Gelir' ? 'text-[#10b981]' : 'text-[#ef4444]'}">${t.type === 'Gelir' ? '+' : '-'}${t.amount.toLocaleString('tr-TR')} ₺</span>
-                            <button onclick="closeLogModal(); openEditModal(${t.id})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2 py-0.5 rounded-lg text-[10px] font-semibold">Düzenle</button>
-                            <button onclick="deleteTxFromModal(${t.id})" class="w-5 h-5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-[10px] font-bold">✕</button>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-bold ${t.type === 'Gelir' ? 'text-[#10b981]' : 'text-[#ef4444]'}">${t.type === 'Gelir' ? '+' : '-'}${t.amount.toLocaleString('tr-TR')} ₺</span>
+                            <button onclick="closeLogModal(); openEditModal(${t.id})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1 rounded-lg text-xs font-semibold">Düzenle</button>
+                            <button onclick="deleteTxFromModal(${t.id})" class="w-6 h-6 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-xs font-bold">✕</button>
                         </div>
                     </div>
                 `).join('');
@@ -842,7 +842,7 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v28');
+                localStorage.removeItem('cep_butce_excel_v29');
                 location.reload();
             }
         }
