@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v31</title>
+    <title>CepteBütçe - Tam Senkron v32</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
@@ -263,7 +263,7 @@
         ];
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v31', 'cep_butce_excel_v30', 'cep_butce_excel_v29', 'cep_butce_excel_v28', 'cep_butce_excel_v27'];
+        const keysToCheck = ['cep_butce_excel_v32', 'cep_butce_excel_v31', 'cep_butce_excel_v30', 'cep_butce_excel_v29', 'cep_butce_excel_v28'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -290,7 +290,7 @@
         }
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
-        // Firebase Firestore Otomatik Entegrasyonu (v31 - Bulut Öncelikli Master Senkron)
+        // Firebase Firestore Otomatik Entegrasyonu (v32 - Anlık Kilit Senkronizasyonu)
         const firebaseConfig = {
             apiKey: "AIzaSyCLxx02KpBH2MFGXEePIb-w79FVwOBW4GQ",
             authDomain: "butce-24f0f.firebaseapp.com",
@@ -303,6 +303,14 @@
         let db = null;
         let isSyncingFromCloud = false;
 
+        function checkLock() {
+            if(state.pin && !sessionStorage.getItem('cep_unlocked')) {
+                document.getElementById('lock-screen').style.display = 'flex';
+            } else {
+                document.getElementById('lock-screen').style.display = 'none';
+            }
+        }
+
         function initFirebase() {
             try {
                 if (!firebase.apps.length) {
@@ -310,13 +318,14 @@
                 }
                 db = firebase.firestore();
                 
-                // 1. Önce buluttaki veriyi doğrudan çekip master yap
+                // 1. Önce buluttaki veriyi doğrudan çekip master yap ve kilidi kontrol et
                 db.collection("cepButce").doc("anaVeri").get().then((doc) => {
                     if (doc.exists) {
                         let cloudData = doc.data();
                         if (cloudData && cloudData.transactions) {
                             state = cloudData;
-                            localStorage.setItem('cep_butce_excel_v31', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v32', JSON.stringify(state));
+                            checkLock();
                             renderView();
                         }
                     } else {
@@ -324,7 +333,7 @@
                     }
                 }).catch(e => {});
 
-                // 2. Anlık gerçek zamanlı dinleyici (Diğer cihazdaki değişiklikleri direkt uygular)
+                // 2. Anlık gerçek zamanlı dinleyici
                 db.collection("cepButce").doc("anaVeri").onSnapshot((doc) => {
                     let statusEl = document.getElementById('sync-status');
                     if (doc.exists) {
@@ -336,7 +345,8 @@
                         if (cloudData && cloudData.transactions) {
                             isSyncingFromCloud = true;
                             state = cloudData;
-                            localStorage.setItem('cep_butce_excel_v31', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v32', JSON.stringify(state));
+                            checkLock();
                             renderView();
                             isSyncingFromCloud = false;
                         }
@@ -354,7 +364,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v31', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v32', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -377,14 +387,6 @@
         const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
         let activeMonthIndex = 8; // Eylül (2026)
         let activeYear = 2026;
-
-        function checkLock() {
-            if(state.pin && !sessionStorage.getItem('cep_unlocked')) {
-                document.getElementById('lock-screen').style.display = 'flex';
-            } else {
-                document.getElementById('lock-screen').style.display = 'none';
-            }
-        }
 
         function tryUnlock() {
             let val = document.getElementById('unlock-pin').value;
@@ -654,7 +656,7 @@
                         <div class="bg-[#18181c] border border-zinc-800/70 rounded-3xl p-6 space-y-5">
                             
                             <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold flex items-center space-x-2">
-                                <span>🟢 Master Bulut Senkronizasyonu Aktif</span>
+                                <span>🟢 Kilit & Bulut Senkronizasyonu Aktif</span>
                             </div>
 
                             <div class="space-y-2.5 pb-4 border-b border-zinc-800">
@@ -868,7 +870,7 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v31');
+                localStorage.removeItem('cep_butce_excel_v32');
                 location.reload();
             }
         }
