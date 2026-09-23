@@ -139,31 +139,160 @@
     </div>
 
     <script>
-        // Kalemlerin ve 2027 Aralık'a kadarki planların tam listesi
+        // Excel Tablonuza Göre Eksiksiz Plan (Eylül 2026 - Aralık 2027)
         let defaultTransactions = [
             // EYLÜL 2026
             { id: 101, name: "Maaş 1", amount: 35000, type: "Gelir", category: "Gelir", date: "Eylül 2026" },
             { id: 102, name: "Maaş 2", amount: 45000, type: "Gelir", category: "Gelir", date: "Eylül 2026" },
             { id: 103, name: "Kira", amount: 15000, type: "Gider", category: "Gider", date: "Eylül 2026" },
+
             // EKİM 2026
             { id: 201, name: "Maaş 1", amount: 35000, type: "Gelir", category: "Gelir", date: "Ekim 2026" },
             { id: 202, name: "Maaş 2", amount: 45000, type: "Gelir", category: "Gelir", date: "Ekim 2026" },
-            { id: 203, name: "Kira", amount: 15000, type: "Gider", category: "Gider", date: "Ekim 2026" },
-            { id: 204, name: "Fon Yatırımı", amount: 27000, type: "Gider", category: "Fon Yatırımı", date: "Ekim 2026" },
-            { id: 205, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Ekim 2026" },
-            { id: 206, name: "YKB Kredi", amount: 15000, type: "Gider", category: "Gider", date: "Ekim 2026" },
-            { id: 207, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Ekim 2026" }
+            { id: 203, name: "Nejat", amount: 1200, type: "Gelir", category: "Gelir", date: "Ekim 2026" },
+            { id: 204, name: "Kira", amount: 15000, type: "Gider", category: "Gider", date: "Ekim 2026" },
+            { id: 205, name: "Fon Yatırımı", amount: 27000, type: "Gider", category: "Fon Yatırımı", date: "Ekim 2026" },
+            { id: 206, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Ekim 2026" },
+            { id: 207, name: "YKB Kredi", amount: 15000, type: "Gider", category: "Gider", date: "Ekim 2026" },
+            { id: 208, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Ekim 2026" },
+
+            // KASIM 2026
+            { id: 301, name: "Maaş 1", amount: 45000, type: "Gelir", category: "Gelir", date: "Kasım 2026" },
+            { id: 302, name: "Maaş 2", amount: 45000, type: "Gelir", category: "Gelir", date: "Kasım 2026" },
+            { id: 303, name: "Nejat", amount: 1000, type: "Gelir", category: "Gelir", date: "Kasım 2026" },
+            { id: 304, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Kasım 2026" },
+            { id: 305, name: "Fon Yatırımı", amount: 27000, type: "Gider", category: "Fon Yatırımı", date: "Kasım 2026" },
+            { id: 306, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Kasım 2026" },
+            { id: 307, name: "YKB Kredi", amount: 15000, type: "Gider", category: "Gider", date: "Kasım 2026" },
+            { id: 308, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Kasım 2026" },
+
+            // ARALIK 2026
+            { id: 401, name: "Maaş 1", amount: 45000, type: "Gelir", category: "Gelir", date: "Aralık 2026" },
+            { id: 402, name: "Maaş 2", amount: 45000, type: "Gelir", category: "Gelir", date: "Aralık 2026" },
+            { id: 403, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Aralık 2026" },
+            { id: 404, name: "Fon Yatırımı", amount: 27000, type: "Gider", category: "Fon Yatırımı", date: "Aralık 2026" },
+            { id: 405, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Aralık 2026" },
+            { id: 406, name: "YKB Kredi", amount: 15000, type: "Gider", category: "Gider", date: "Aralık 2026" },
+            { id: 407, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Aralık 2026" },
+
+            // OCAK 2027
+            { id: 501, name: "Maaş 1", amount: 45000, type: "Gelir", category: "Gelir", date: "Ocak 2027" },
+            { id: 502, name: "Maaş 2", amount: 45000, type: "Gelir", category: "Gelir", date: "Ocak 2027" },
+            { id: 503, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Ocak 2027" },
+            { id: 504, name: "Fon Yatırımı", amount: 27000, type: "Gider", category: "Fon Yatırımı", date: "Ocak 2027" },
+            { id: 505, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Ocak 2027" },
+            { id: 506, name: "YKB Kredi", amount: 15000, type: "Gider", category: "Gider", date: "Ocak 2027" },
+            { id: 507, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Ocak 2027" },
+
+            // ŞUBAT 2027
+            { id: 601, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Şubat 2027" },
+            { id: 602, name: "Maaş 2", amount: 45000, type: "Gelir", category: "Gelir", date: "Şubat 2027" },
+            { id: 603, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Şubat 2027" },
+            { id: 604, name: "Fon Yatırımı", amount: 40000, type: "Gider", category: "Fon Yatırımı", date: "Şubat 2027" },
+            { id: 605, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Şubat 2027" },
+            { id: 606, name: "YKB Kredi", amount: 15000, type: "Gider", category: "Gider", date: "Şubat 2027" },
+            { id: 607, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Şubat 2027" },
+
+            // MART 2027
+            { id: 701, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Mart 2027" },
+            { id: 702, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Mart 2027" },
+            { id: 703, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Mart 2027" },
+            { id: 704, name: "Fon Yatırımı", amount: 40000, type: "Gider", category: "Fon Yatırımı", date: "Mart 2027" },
+            { id: 705, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Mart 2027" },
+            { id: 706, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Mart 2027" },
+            { id: 707, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Mart 2027" },
+
+            // NİSAN 2027
+            { id: 801, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Nisan 2027" },
+            { id: 802, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Nisan 2027" },
+            { id: 803, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Nisan 2027" },
+            { id: 804, name: "Fon Yatırımı", amount: 40000, type: "Gider", category: "Fon Yatırımı", date: "Nisan 2027" },
+            { id: 805, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Nisan 2027" },
+            { id: 806, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Nisan 2027" },
+            { id: 807, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Nisan 2027" },
+
+            // MAYIS 2027
+            { id: 901, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Mayıs 2027" },
+            { id: 902, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Mayıs 2027" },
+            { id: 903, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Mayıs 2027" },
+            { id: 904, name: "Fon Yatırımı", amount: 40000, type: "Gider", category: "Fon Yatırımı", date: "Mayıs 2027" },
+            { id: 905, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Mayıs 2027" },
+            { id: 906, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Mayıs 2027" },
+            { id: 907, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Mayıs 2027" },
+
+            // HAZİRAN 2027
+            { id: 1001, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Haziran 2027" },
+            { id: 1002, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Haziran 2027" },
+            { id: 1003, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Haziran 2027" },
+            { id: 1004, name: "Fon Yatırımı", amount: 40000, type: "Gider", category: "Fon Yatırımı", date: "Haziran 2027" },
+            { id: 1005, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Haziran 2027" },
+            { id: 1006, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Haziran 2027" },
+            { id: 1007, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Haziran 2027" },
+
+            // TEMMUZ 2027
+            { id: 1101, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Temmuz 2027" },
+            { id: 1102, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Temmuz 2027" },
+            { id: 1103, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Temmuz 2027" },
+            { id: 1104, name: "Fon Yatırımı", amount: 40000, type: "Gider", category: "Fon Yatırımı", date: "Temmuz 2027" },
+            { id: 1105, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Temmuz 2027" },
+            { id: 1106, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Temmuz 2027" },
+            { id: 1107, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Temmuz 2027" },
+
+            // AĞUSTOS 2027
+            { id: 1201, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Ağustos 2027" },
+            { id: 1202, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Ağustos 2027" },
+            { id: 1203, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Ağustos 2027" },
+            { id: 1204, name: "Fon Yatırımı", amount: 40000, type: "Gider", category: "Fon Yatırımı", date: "Ağustos 2027" },
+            { id: 1205, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Ağustos 2027" },
+            { id: 1206, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Ağustos 2027" },
+            { id: 1207, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Ağustos 2027" },
+
+            // EYLÜL 2027
+            { id: 1301, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Eylül 2027" },
+            { id: 1302, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Eylül 2027" },
+            { id: 1303, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Eylül 2027" },
+            { id: 1304, name: "Fon Yatırımı", amount: 40000, type: "Gider", category: "Fon Yatırımı", date: "Eylül 2027" },
+            { id: 1305, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Eylül 2027" },
+            { id: 1306, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Eylül 2027" },
+            { id: 1307, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Eylül 2027" },
+
+            // EKİM 2027
+            { id: 1401, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Ekim 2027" },
+            { id: 1402, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Ekim 2027" },
+            { id: 1403, name: "Kira", amount: 20000, type: "Gider", category: "Gider", date: "Ekim 2027" },
+            { id: 1404, name: "Fon Yatırımı", amount: 40000, type: "Gider", category: "Fon Yatırımı", date: "Ekim 2027" },
+            { id: 1405, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Ekim 2027" },
+            { id: 1406, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Ekim 2027" },
+            { id: 1407, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Ekim 2027" },
+
+            // KASIM 2027
+            { id: 1501, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Kasım 2027" },
+            { id: 1502, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Kasım 2027" },
+            { id: 1503, name: "Kira", amount: 27000, type: "Gider", category: "Gider", date: "Kasım 2027" },
+            { id: 1504, name: "Fon Yatırımı", amount: 40000, type: "Gider", category: "Fon Yatırımı", date: "Kasım 2027" },
+            { id: 1505, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Kasım 2027" },
+            { id: 1506, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Kasım 2027" },
+            { id: 1507, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Kasım 2027" },
+
+            // ARALIK 2027
+            { id: 1601, name: "Maaş 1", amount: 55000, type: "Gelir", category: "Gelir", date: "Aralık 2027" },
+            { id: 1602, name: "Maaş 2", amount: 54000, type: "Gelir", category: "Gelir", date: "Aralık 2027" },
+            { id: 1603, name: "Kira", amount: 27000, type: "Gider", category: "Gider", date: "Aralık 2027" },
+            { id: 1604, name: "Fon Yatırımı", amount: 40000, type: "Gider", category: "Fon Yatırımı", date: "Aralık 2027" },
+            { id: 1605, name: "TEB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Aralık 2027" },
+            { id: 1606, name: "YKB Kredi", amount: 10000, type: "Gider", category: "Gider", date: "Aralık 2027" },
+            { id: 1607, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Aralık 2027" }
         ];
 
-        // Sabit ve kalıcı depolama anahtarı (cep_butce_v_final)
+        // Yeni excel tabanı anahtarı ile verileri yüklüyoruz
         let savedData = null;
-        const keysToCheck = ['cep_butce_v_final', 'cep_butce_secure_data', 'cep_butce_secure_v32', 'cep_butce_secure_v31', 'cep_butce_secure_v30'];
+        const keysToCheck = ['cep_butce_excel_v1', 'cep_butce_v_final', 'cep_butce_secure_data'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
                 try {
                     let parsed = JSON.parse(data);
-                    if(parsed && parsed.transactions && parsed.transactions.length > 0) {
+                    if(parsed && parsed.transactions && parsed.transactions.length > 5) {
                         savedData = parsed;
                         break;
                     }
@@ -178,7 +307,7 @@
         };
 
         function saveState() {
-            localStorage.setItem('cep_butce_v_final', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v1', JSON.stringify(state));
         }
 
         let currentTab = 'home';
@@ -354,7 +483,7 @@
                     </div>
                 `;
             } else if (currentTab === 'expense') {
-                let giderList = monthTx.filter(t => t.type === 'Gider');
+                let giderList = monthTx.filter(t => t.type === 'Gider' || t.type === 'Fon Yatırımı');
                 container.innerHTML = `
                     <div class="space-y-4">
                         <div class="flex justify-between items-center">
@@ -637,7 +766,7 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_v_final');
+                localStorage.removeItem('cep_butce_excel_v1');
                 location.reload();
             }
         }
