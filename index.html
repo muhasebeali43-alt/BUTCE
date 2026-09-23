@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Otomatik Senkron</title>
+    <title>CepteBütçe - Canlı Senkron</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -256,7 +256,7 @@
         ];
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v8', 'cep_butce_excel_v7', 'cep_butce_excel_v6'];
+        const keysToCheck = ['cep_butce_excel_v9', 'cep_butce_excel_v8', 'cep_butce_excel_v7'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -283,12 +283,12 @@
         }
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
-        // Sabit Ortak Bulut Adresi (Sabit Blob ID)
-        const SHARED_BLOB_ID = "ali-cengiz-ceptebutce-cloud-id";
+        // Standart Geçerli UUID v4 Ortak Bulut ID
+        const SHARED_BLOB_ID = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d";
 
         function saveState() {
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v8', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v9', JSON.stringify(state));
             pushToCloud();
         }
 
@@ -302,15 +302,17 @@
                     body: JSON.stringify(state)
                 });
                 if (res.ok) {
-                    document.getElementById('sync-status').innerText = "Bulut: Eşitlendi";
+                    document.getElementById('sync-status').innerText = "Bulut: Canlı Eşit";
                     document.getElementById('sync-status').className = "text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400";
                 } else {
-                    // Eğer ilk kez oluşturuluyorsa POST at
+                    // İlk kez oluşturuluyorsa POST at
                     await fetch('https://jsonblob.com/api/jsonBlob', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                         body: JSON.stringify(state)
                     });
+                    document.getElementById('sync-status').innerText = "Bulut: Canlı Eşit";
+                    document.getElementById('sync-status').className = "text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400";
                 }
             } catch(e) {
                 document.getElementById('sync-status').innerText = "Bulut: Çevrimdışı";
@@ -324,16 +326,23 @@
                 if(res.ok) {
                     let cloudData = await res.json();
                     if(cloudData && cloudData.lastUpdated) {
+                        // Eğer buluttaki veri yereldekinden daha yeniyse, otomatik olarak state'i güncelle ve ekrana yansıt
                         if(cloudData.lastUpdated > (state.lastUpdated || 0)) {
                             state = cloudData;
-                            localStorage.setItem('cep_butce_excel_v8', JSON.stringify(state));
-                            renderView();
+                            localStorage.setItem('cep_butce_excel_v9', JSON.stringify(state));
+                            renderView(); // Sayfayı yenilemeden anlık olarak arayüzü günceller
                             document.getElementById('sync-status').innerText = "Bulut: Güncellendi";
+                            document.getElementById('sync-status').className = "text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400";
+                        } else {
+                            document.getElementById('sync-status').innerText = "Bulut: Canlı Eşit";
                             document.getElementById('sync-status').className = "text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400";
                         }
                     }
                 }
-            } catch(e){}
+            } catch(e){
+                document.getElementById('sync-status').innerText = "Bulut: Çevrimdışı";
+                document.getElementById('sync-status').className = "text-[9px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400";
+            }
         }
 
         let currentTab = 'home';
@@ -764,18 +773,18 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v8');
+                localStorage.removeItem('cep_butce_excel_v9');
                 location.reload();
             }
         }
 
-        // İlk açılışta buluttan veriyi çek ve ekranı kur
+        // Başlangıç ve Canlı Senkron Döngüsü
         async function initApp() {
             checkLock();
             await backgroundAutoSync();
             renderView();
-            // Arka planda her 5 saniyede bir diğer cihazlardan gelen güncellemeleri kontrol et
-            setInterval(backgroundAutoSync, 5000);
+            // Her 4 saniyede bir bulutu kontrol et; diğer cihazda değişiklik varsa ekranda otomatik yenile
+            setInterval(backgroundAutoSync, 4000);
         }
 
         initApp();
