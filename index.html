@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Akıllı QR Senkron v14</title>
+    <title>CepteBütçe - Kusursuz QR & Senkron v15</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -264,7 +264,7 @@
         }
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v14', 'cep_butce_excel_v13', 'cep_butce_excel_v12', 'cep_butce_excel_v11', 'cep_butce_excel_v10'];
+        const keysToCheck = ['cep_butce_excel_v15', 'cep_butce_excel_v14', 'cep_butce_excel_v13', 'cep_butce_excel_v12', 'cep_butce_excel_v11'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -292,6 +292,9 @@
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
         async function createCloudBlob() {
+            let existingId = localStorage.getItem('cep_blob_id');
+            if (existingId) return existingId;
+
             try {
                 let res = await fetch('https://jsonblob.com/api/jsonBlob', {
                     method: 'POST',
@@ -313,16 +316,13 @@
 
         async function saveState() {
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v14', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v15', JSON.stringify(state));
             await pushToCloud();
         }
 
         async function pushToCloud() {
-            let blobId = localStorage.getItem('cep_blob_id');
-            if (!blobId) {
-                blobId = await createCloudBlob();
-                if (!blobId) return;
-            }
+            let blobId = await createCloudBlob();
+            if (!blobId) return;
 
             try {
                 let res = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`, {
@@ -339,11 +339,8 @@
         }
 
         async function backgroundAutoSync() {
-            let blobId = localStorage.getItem('cep_blob_id');
-            if (!blobId) {
-                await createCloudBlob();
-                return;
-            }
+            let blobId = await createCloudBlob();
+            if (!blobId) return;
 
             try {
                 let res = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`, { headers: { 'Accept': 'application/json' } });
@@ -352,12 +349,13 @@
                     if(cloudData && cloudData.lastUpdated) {
                         if(cloudData.lastUpdated > (state.lastUpdated || 0)) {
                             state = cloudData;
-                            localStorage.setItem('cep_butce_excel_v14', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v15', JSON.stringify(state));
                             renderView();
                         }
                     }
                 } else if(res.status === 404) {
-                    await pushToCloud();
+                    localStorage.removeItem('cep_blob_id');
+                    await createCloudBlob();
                 }
             } catch(e){}
         }
@@ -599,38 +597,44 @@
                     </div>
                 `;
             } else if (currentTab === 'settings') {
-                let currentSyncLink = window.location.origin + window.location.pathname + '#blob=' + (localStorage.getItem('cep_blob_id') || '');
-                let qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentSyncLink)}`;
+                let blobId = localStorage.getItem('cep_blob_id') || '';
+                let currentSyncLink = window.location.origin + window.location.pathname + '#blob=' + blobId;
+                let qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(currentSyncLink)}`;
+                
                 container.innerHTML = `
                     <div class="max-w-xl mx-auto space-y-4">
-                        <h2 class="text-sm sm:text-lg font-bold text-white mb-2">Ayarlar & QR Cihaz Eşleştirme</h2>
-                        <div class="bg-[#18181c] border border-zinc-800/60 rounded-3xl p-5 space-y-4">
+                        <h2 class="text-sm sm:text-lg font-bold text-white mb-2">Ayarlar & Cihaz Eşleştirme</h2>
+                        <div class="bg-[#18181c] border border-zinc-800/60 rounded-3xl p-5 space-y-5">
                             
-                            <div class="space-y-3 pb-3 border-b border-zinc-800 text-center">
+                            <!-- QR Kod ile Eşitleme Alanı -->
+                            <div class="space-y-3 pb-4 border-b border-zinc-800 text-center">
                                 <span class="text-xs sm:text-sm font-bold text-white block">📱 Telefonla Otomatik Eşleştir (QR Kod)</span>
-                                <p class="text-[10px] text-zinc-400">Telefonunuzun kamerasıyla aşağıdaki QR kodu taratarak bilgisayarınızla anında senkronize edebilirsiniz.</p>
-                                <div class="bg-white p-3 inline-block rounded-2xl shadow-md">
-                                    <img src="${qrApiUrl}" alt="Eşitleme QR Kodu" class="w-32 h-32 mx-auto">
+                                <p class="text-[10px] text-zinc-400">Telefonunuzun kamerasıyla bu QR kodu okutarak bilgisayarınızla anında eşitleyin.</p>
+                                <div class="bg-white p-3 inline-block rounded-2xl shadow-lg">
+                                    <img src="${qrApiUrl}" alt="Eşitleme QR Kodu" class="w-36 h-36 mx-auto">
+                                </div>
+                                <div class="pt-2">
+                                    <input type="text" readonly value="${currentSyncLink}" class="w-full bg-[#121215] border border-zinc-800 rounded-xl p-2.5 text-zinc-300 text-[10px] text-center outline-none select-all">
                                 </div>
                             </div>
 
-                            <div class="space-y-2.5 pb-3 border-b border-zinc-800">
+                            <div class="space-y-2.5 pb-4 border-b border-zinc-800">
                                 <span class="text-xs sm:text-sm font-bold text-white block">Uygulama Şifresi</span>
                                 <div class="flex space-x-2">
                                     <input type="password" id="setting-pin" placeholder="${state.pin ? 'Yeni şifre' : 'Şifre koy'}" maxlength="6" class="flex-1 bg-[#121215] border border-zinc-800 rounded-xl p-2.5 text-white text-xs outline-none focus:border-[#ccff00]">
-                                    <button onclick="savePinSetting()" class="bg-[#ccff00] text-black font-bold px-3.5 py-2.5 rounded-xl text-xs">Kaydet</button>
+                                    <button onclick="savePinSetting()" class="bg-[#ccff00] text-black font-bold px-3.5 py-2.5 rounded-xl text-xs hover:bg-[#b3e600]">Kaydet</button>
                                 </div>
                                 ${state.pin ? '<button onclick="removePin()" class="text-red-400 text-[11px] font-semibold hover:underline">Şifreyi Kaldır</button>' : ''}
                             </div>
 
-                            <div class="flex justify-between items-center py-1.5 border-b border-zinc-800">
+                            <div class="flex justify-between items-center py-2 border-b border-zinc-800">
                                 <span class="text-xs sm:text-sm font-medium text-white">Dönem Hareketleri (Tüm Aylar)</span>
-                                <button onclick="openLogModal()" class="bg-purple-500/10 text-purple-400 text-[11px] font-bold px-3 py-1.5 rounded-xl">Yönet / Gör</button>
+                                <button onclick="openLogModal()" class="bg-purple-500/10 text-purple-400 text-[11px] font-bold px-3.5 py-2 rounded-xl">Yönet / Gör</button>
                             </div>
 
-                            <div class="flex justify-between items-center py-1.5">
+                            <div class="flex justify-between items-center py-2">
                                 <span class="text-xs sm:text-sm font-medium text-white">Tablo Verilerini Sıfırla</span>
-                                <button onclick="resetData()" class="bg-red-500/10 text-red-400 text-[11px] font-bold px-3 py-1.5 rounded-xl">Sıfırla</button>
+                                <button onclick="resetData()" class="bg-red-500/10 text-red-400 text-[11px] font-bold px-3.5 py-2 rounded-xl">Sıfırla</button>
                             </div>
                         </div>
                     </div>
@@ -790,7 +794,7 @@
             saveState(); closeFundModal(); renderView();
         }
 
-        // Silme işlemine yanlışlıkla dokunmalara karşı onay uyarısı eklendi
+        // Silme işlemine yanlışlıkla basmalara karşı onay uyarısı
         function deleteTx(id) {
             let tx = state.transactions.find(t => t.id === id);
             let txName = tx ? tx.name : "Bu işlemi";
@@ -814,18 +818,18 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v14');
+                localStorage.removeItem('cep_butce_excel_v15');
                 localStorage.removeItem('cep_blob_id');
                 location.reload();
             }
         }
 
-        // Başlangıç ve Otomatik Arka Plan Senkronizasyonu
+        // Başlangıç ve Otomatik Senkronizasyon Döngüsü
         async function initApp() {
             checkLock();
-            await backgroundAutoSync();
+            await createCloudBlob(); // İlk açılışta anında bulut odası oluşturulur
             renderView();
-            // Her 4 saniyede bir arkada sessizce eşitler ve silinen/eklenenleri anında yansıtır
+            // Her 4 saniyede bir arkada sessizce eşitler, silinenleri ve eklenenleri anında yansıtır
             setInterval(backgroundAutoSync, 4000);
         }
 
