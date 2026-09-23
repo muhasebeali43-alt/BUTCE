@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Her Yerden Kesintisiz Senkron v20</title>
+    <title>CepteBütçe - Firebase Otomatik Senkron v22</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Firebase v8 SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0b0b0e; color: #ffffff; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -37,7 +40,7 @@
             <div class="flex items-center space-x-2">
                 <div class="w-2.5 h-2.5 rounded-full bg-[#ccff00]"></div>
                 <span class="text-xs sm:text-sm font-extrabold tracking-wide text-white">CepteBütçe</span>
-                <span id="sync-status" class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 transition">Bulut: Bağlı</span>
+                <span id="sync-status" class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 transition">Canlı Bağlı</span>
             </div>
             <div class="flex items-center space-x-2.5 bg-[#18181c] px-3 py-1.5 rounded-2xl border border-zinc-800">
                 <button onclick="prevMonth()" class="w-6 h-6 rounded-xl bg-zinc-800/60 hover:bg-zinc-700 text-zinc-300 flex items-center justify-center font-bold transition text-xs">◀</button>
@@ -256,7 +259,7 @@
         ];
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v20', 'cep_butce_excel_v19', 'cep_butce_excel_v18', 'cep_butce_excel_v17', 'cep_butce_excel_v16'];
+        const keysToCheck = ['cep_butce_excel_v22', 'cep_butce_excel_v21', 'cep_butce_excel_v20', 'cep_butce_excel_v19', 'cep_butce_excel_v18'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -274,7 +277,6 @@
             transactions: defaultTransactions,
             funds: { currentBalance: 750000, principal: 750000, previousBalance: 750000 },
             pin: "",
-            syncCode: localStorage.getItem('cep_sync_code') || "alicengiz2026",
             lastUpdated: Date.now()
         };
 
@@ -283,68 +285,58 @@
             state.funds = { currentBalance: bal, principal: bal, previousBalance: bal };
         }
         if(!state.lastUpdated) state.lastUpdated = Date.now();
-        if(!state.syncCode) state.syncCode = localStorage.getItem('cep_sync_code') || "alicengiz2026";
 
-        // Deterministic Bulut Veritabanı (Doğrudan girilen koda göre sabit adres)
-        function getCloudEndpoint() {
-            let code = (localStorage.getItem('cep_sync_code') || "alicengiz2026").toLowerCase().trim().replace(/[^a-z0-9]/g, '');
-            // Sabit npoint veya güvenli deterministic jsonbin alternatifi olarak paylaşımlı public test node
-            return `https://api.npoint.io/cb_${code}`; 
-        }
+        // Firebase Firestore Entegrasyonu (Doğrudan Koda Gömülü - Sıfır Manuel İşlem)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCLxx02KpBH2MFGXEePIb-w79FVwOBW4GQ",
+            authDomain: "butce-24f0f.firebaseapp.com",
+            projectId: "butce-24f0f",
+            storageBucket: "butce-24f0f.appspot.com",
+            messagingSenderId: "202707791257",
+            appId: "1:202707791257:web:694f4e63831630e0eab708"
+        };
 
-        async function syncToCloud() {
-            let code = (localStorage.getItem('cep_sync_code') || "alicengiz2026").toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+        let db = null;
+        let isSyncingFromCloud = false;
+
+        function initFirebase() {
             try {
-                // npoint sabit anahtar simülasyonu için özel bir bin haritalama tablosu yerine güvenli REST PUT
-                let endpoint = `https://api.npoint.io/` + (localStorage.getItem('cep_npoint_fixed_id_' + code) || '');
-                let res;
-                if(!localStorage.getItem('cep_npoint_fixed_id_' + code)) {
-                    // İlk oluşturma
-                    res = await fetch('https://api.npoint.io', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(state)
-                    });
-                    if(res.ok) {
-                        let json = await res.json();
-                        if(json && json.id) {
-                            localStorage.setItem('cep_npoint_fixed_id_' + code, json.id);
-                        }
-                    }
-                } else {
-                    await fetch(endpoint, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(state)
-                    });
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
                 }
-            } catch(e) {}
-        }
-
-        async function backgroundPollCloud() {
-            let code = (localStorage.getItem('cep_sync_code') || "alicengiz2026").toLowerCase().trim().replace(/[^a-z0-9]/g, '');
-            let binId = localStorage.getItem('cep_npoint_fixed_id_' + code);
-            if(!binId) return;
-
-            try {
-                let res = await fetch(`https://api.npoint.io/${binId}`);
-                if(res.ok) {
-                    let cloudData = await res.json();
-                    if(cloudData && cloudData.lastUpdated) {
-                        if(cloudData.lastUpdated > (state.lastUpdated || 0)) {
+                db = firebase.firestore();
+                
+                // Gerçek zamanlı canlı dinleyici
+                db.collection("cepButce").doc("anaVeri").onSnapshot((doc) => {
+                    if (doc.exists) {
+                        let cloudData = doc.data();
+                        if (cloudData && cloudData.lastUpdated && cloudData.lastUpdated > (state.lastUpdated || 0)) {
+                            isSyncingFromCloud = true;
                             state = cloudData;
-                            localStorage.setItem('cep_butce_excel_v20', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v22', JSON.stringify(state));
                             renderView();
+                            isSyncingFromCloud = false;
                         }
                     }
+                }, (error) => {});
+                
+                let statusEl = document.getElementById('sync-status');
+                if(statusEl) {
+                    statusEl.innerText = "Firebase: Canlı Bağlı";
+                    statusEl.className = "text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 transition";
                 }
             } catch(e) {}
         }
 
         function saveState() {
+            if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v20', JSON.stringify(state));
-            syncToCloud();
+            localStorage.setItem('cep_butce_excel_v22', JSON.stringify(state));
+
+            if(db) {
+                db.collection("cepButce").doc("anaVeri").set(state)
+                  .catch((error) => {});
+            }
         }
 
         let currentTab = 'home';
@@ -584,20 +576,13 @@
                     </div>
                 `;
             } else if (currentTab === 'settings') {
-                let currentSyncCode = localStorage.getItem('cep_sync_code') || "alicengiz2026";
                 container.innerHTML = `
                     <div class="max-w-xl mx-auto space-y-4">
-                        <h2 class="text-sm sm:text-lg font-bold text-white mb-2">Ayarlar & Eşitleme</h2>
+                        <h2 class="text-sm sm:text-lg font-bold text-white mb-2">Ayarlar & Sistem</h2>
                         <div class="bg-[#18181c] border border-zinc-800/60 rounded-3xl p-5 space-y-5">
                             
-                            <!-- Eşitleme Kodu -->
-                            <div class="space-y-2.5 pb-4 border-b border-zinc-800">
-                                <span class="text-xs sm:text-sm font-bold text-white block">🔗 Ortak Eşitleme Kodunuz</span>
-                                <p class="text-[10px] text-zinc-400">Telefonunuzda ve bilgisayarınızda buraya <u>aynı kelimeyi</u> yazın (Örn: <b>alicengiz2026</b>) ve "Kaydet"e basın. Her yerden anında eşleşecektir.</p>
-                                <div class="flex space-x-2 pt-1">
-                                    <input type="text" id="setting-sync-code" value="${currentSyncCode}" placeholder="Örn: alicengiz2026" class="flex-1 bg-[#121215] border border-zinc-800 rounded-xl p-3 text-white text-xs outline-none focus:border-[#ccff00]">
-                                    <button onclick="saveSyncCode()" class="bg-[#ccff00] text-black font-bold px-4 py-3 rounded-xl text-xs hover:bg-[#b3e600]">Kaydet</button>
-                                </div>
+                            <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold flex items-center space-x-2">
+                                <span>🟢 Firebase Canlı Bağlantı Aktif (Otomatik)</span>
                             </div>
 
                             <div class="space-y-2.5 pb-4 border-b border-zinc-800">
@@ -622,17 +607,6 @@
                     </div>
                 `;
             }
-        }
-
-        function saveSyncCode() {
-            let val = document.getElementById('setting-sync-code').value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-            if(!val) { alert('Lütfen geçerli bir kod girin.'); return; }
-            localStorage.setItem('cep_sync_code', val);
-            state.syncCode = val;
-            localStorage.removeItem('cep_npoint_fixed_id_' + val);
-            saveState();
-            alert('Eşitleme kodu kaydedildi! Telefonunuza da aynı kodu yazdığınızda cihazlar birbirine bağlanacaktır.');
-            renderView();
         }
 
         function savePinSetting() {
@@ -787,7 +761,6 @@
             saveState(); closeFundModal(); renderView();
         }
 
-        // Silme işlemine onay uyarısı
         function deleteTx(id) {
             let tx = state.transactions.find(t => t.id === id);
             let txName = tx ? tx.name : "Bu işlemi";
@@ -811,23 +784,15 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v20');
-                let code = localStorage.getItem('cep_sync_code') || "alicengiz2026";
-                localStorage.removeItem('cep_npoint_fixed_id_' + code);
+                localStorage.removeItem('cep_butce_excel_v22');
                 location.reload();
             }
         }
 
-        // Başlangıç ve Otomatik Senkronizasyon Döngüsü
-        async function initApp() {
-            checkLock();
-            await syncToCloud();
-            renderView();
-            // Her 3 saniyede bir arkada bulutu kontrol eder ve günceller
-            setInterval(backgroundPollCloud, 3000);
-        }
-
-        initApp();
+        // Başlangıç
+        checkLock();
+        initFirebase();
+        renderView();
     </script>
 </body>
 </html>
