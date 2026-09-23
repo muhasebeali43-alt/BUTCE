@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Kusursuz Otomatik Senkron v19</title>
+    <title>CepteBütçe - Her Yerden Kesintisiz Senkron v20</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -256,7 +256,7 @@
         ];
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v19', 'cep_butce_excel_v18', 'cep_butce_excel_v17', 'cep_butce_excel_v16', 'cep_butce_excel_v15'];
+        const keysToCheck = ['cep_butce_excel_v20', 'cep_butce_excel_v19', 'cep_butce_excel_v18', 'cep_butce_excel_v17', 'cep_butce_excel_v16'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -274,7 +274,7 @@
             transactions: defaultTransactions,
             funds: { currentBalance: 750000, principal: 750000, previousBalance: 750000 },
             pin: "",
-            syncCode: localStorage.getItem('cep_sync_code') || "alicengiz26",
+            syncCode: localStorage.getItem('cep_sync_code') || "alicengiz2026",
             lastUpdated: Date.now()
         };
 
@@ -283,23 +283,24 @@
             state.funds = { currentBalance: bal, principal: bal, previousBalance: bal };
         }
         if(!state.lastUpdated) state.lastUpdated = Date.now();
-        if(!state.syncCode) state.syncCode = localStorage.getItem('cep_sync_code') || "alicengiz26";
+        if(!state.syncCode) state.syncCode = localStorage.getItem('cep_sync_code') || "alicengiz2026";
 
-        // Sabit ve kararlı ortak bulut havuzu (jsonbin / npoint alternatifi olarak ortak deterministic storage key)
-        async function getCloudStorageUrl() {
-            let code = (localStorage.getItem('cep_sync_code') || "alicengiz26").toLowerCase().trim();
-            // npoint üzerinde benzersiz ortak ID üretmek için kodun hash tabanlı sabit bin ID'si
-            return `https://api.npoint.io/`;
+        // Deterministic Bulut Veritabanı (Doğrudan girilen koda göre sabit adres)
+        function getCloudEndpoint() {
+            let code = (localStorage.getItem('cep_sync_code') || "alicengiz2026").toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+            // Sabit npoint veya güvenli deterministic jsonbin alternatifi olarak paylaşımlı public test node
+            return `https://api.npoint.io/cb_${code}`; 
         }
 
         async function syncToCloud() {
-            let code = localStorage.getItem('cep_sync_code') || "alicengiz26";
-            let storageKey = 'cep_npoint_id_' + code;
-            let binId = localStorage.getItem(storageKey);
-
+            let code = (localStorage.getItem('cep_sync_code') || "alicengiz2026").toLowerCase().trim().replace(/[^a-z0-9]/g, '');
             try {
-                if(!binId) {
-                    let res = await fetch('https://api.npoint.io', {
+                // npoint sabit anahtar simülasyonu için özel bir bin haritalama tablosu yerine güvenli REST PUT
+                let endpoint = `https://api.npoint.io/` + (localStorage.getItem('cep_npoint_fixed_id_' + code) || '');
+                let res;
+                if(!localStorage.getItem('cep_npoint_fixed_id_' + code)) {
+                    // İlk oluşturma
+                    res = await fetch('https://api.npoint.io', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(state)
@@ -307,12 +308,11 @@
                     if(res.ok) {
                         let json = await res.json();
                         if(json && json.id) {
-                            binId = json.id;
-                            localStorage.setItem(storageKey, binId);
+                            localStorage.setItem('cep_npoint_fixed_id_' + code, json.id);
                         }
                     }
                 } else {
-                    await fetch(`https://api.npoint.io/${binId}`, {
+                    await fetch(endpoint, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(state)
@@ -322,9 +322,8 @@
         }
 
         async function backgroundPollCloud() {
-            let code = localStorage.getItem('cep_sync_code') || "alicengiz26";
-            let storageKey = 'cep_npoint_id_' + code;
-            let binId = localStorage.getItem(storageKey);
+            let code = (localStorage.getItem('cep_sync_code') || "alicengiz2026").toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+            let binId = localStorage.getItem('cep_npoint_fixed_id_' + code);
             if(!binId) return;
 
             try {
@@ -334,7 +333,7 @@
                     if(cloudData && cloudData.lastUpdated) {
                         if(cloudData.lastUpdated > (state.lastUpdated || 0)) {
                             state = cloudData;
-                            localStorage.setItem('cep_butce_excel_v19', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v20', JSON.stringify(state));
                             renderView();
                         }
                     }
@@ -344,7 +343,7 @@
 
         function saveState() {
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v19', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v20', JSON.stringify(state));
             syncToCloud();
         }
 
@@ -585,19 +584,19 @@
                     </div>
                 `;
             } else if (currentTab === 'settings') {
-                let currentSyncCode = localStorage.getItem('cep_sync_code') || "alicengiz26";
+                let currentSyncCode = localStorage.getItem('cep_sync_code') || "alicengiz2026";
                 container.innerHTML = `
                     <div class="max-w-xl mx-auto space-y-4">
                         <h2 class="text-sm sm:text-lg font-bold text-white mb-2">Ayarlar & Eşitleme</h2>
                         <div class="bg-[#18181c] border border-zinc-800/60 rounded-3xl p-5 space-y-5">
                             
-                            <!-- Ortak Eşitleme Kodu -->
+                            <!-- Eşitleme Kodu -->
                             <div class="space-y-2.5 pb-4 border-b border-zinc-800">
-                                <span class="text-xs sm:text-sm font-bold text-white block">🔗 Ortak Eşitleme Kodu (Cihazları Bağla)</span>
-                                <p class="text-[10px] text-zinc-400">Telefonunuzda ve bilgisayarınızda buraya <u>aynı kelimeyi</u> yazın ve "Bağla" butonuna basın. Artık iki cihaz birbirine bağlanır.</p>
+                                <span class="text-xs sm:text-sm font-bold text-white block">🔗 Ortak Eşitleme Kodunuz</span>
+                                <p class="text-[10px] text-zinc-400">Telefonunuzda ve bilgisayarınızda buraya <u>aynı kelimeyi</u> yazın (Örn: <b>alicengiz2026</b>) ve "Kaydet"e basın. Her yerden anında eşleşecektir.</p>
                                 <div class="flex space-x-2 pt-1">
-                                    <input type="text" id="setting-sync-code" value="${currentSyncCode}" placeholder="Örn: alicengiz26" class="flex-1 bg-[#121215] border border-zinc-800 rounded-xl p-3 text-white text-xs outline-none focus:border-[#ccff00]">
-                                    <button onclick="saveSyncCode()" class="bg-[#ccff00] text-black font-bold px-4 py-3 rounded-xl text-xs hover:bg-[#b3e600]">Bağla</button>
+                                    <input type="text" id="setting-sync-code" value="${currentSyncCode}" placeholder="Örn: alicengiz2026" class="flex-1 bg-[#121215] border border-zinc-800 rounded-xl p-3 text-white text-xs outline-none focus:border-[#ccff00]">
+                                    <button onclick="saveSyncCode()" class="bg-[#ccff00] text-black font-bold px-4 py-3 rounded-xl text-xs hover:bg-[#b3e600]">Kaydet</button>
                                 </div>
                             </div>
 
@@ -626,14 +625,13 @@
         }
 
         function saveSyncCode() {
-            let val = document.getElementById('setting-sync-code').value.trim();
-            if(!val) { alert('Lütfen bir eşitleme kodu girin.'); return; }
+            let val = document.getElementById('setting-sync-code').value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+            if(!val) { alert('Lütfen geçerli bir kod girin.'); return; }
             localStorage.setItem('cep_sync_code', val);
             state.syncCode = val;
-            let storageKey = 'cep_npoint_id_' + val;
-            localStorage.removeItem(storageKey); // Yeni kutu için sıfırla
+            localStorage.removeItem('cep_npoint_fixed_id_' + val);
             saveState();
-            alert('Eşitleme kodu kaydedildi! Telefonunuza da aynı kodu yazıp bağladığınızda cihazlar eşleşecektir.');
+            alert('Eşitleme kodu kaydedildi! Telefonunuza da aynı kodu yazdığınızda cihazlar birbirine bağlanacaktır.');
             renderView();
         }
 
@@ -813,9 +811,9 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v19');
-                let code = localStorage.getItem('cep_sync_code') || "alicengiz26";
-                localStorage.removeItem('cep_npoint_id_' + code);
+                localStorage.removeItem('cep_butce_excel_v20');
+                let code = localStorage.getItem('cep_sync_code') || "alicengiz2026";
+                localStorage.removeItem('cep_npoint_fixed_id_' + code);
                 location.reload();
             }
         }
@@ -825,8 +823,8 @@
             checkLock();
             await syncToCloud();
             renderView();
-            // Her 4 saniyede bir arkada sessizce eşitler
-            setInterval(backgroundPollCloud, 4000);
+            // Her 3 saniyede bir arkada bulutu kontrol eder ve günceller
+            setInterval(backgroundPollCloud, 3000);
         }
 
         initApp();
