@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Otomatik Bulut</title>
+    <title>CepteBütçe - Akıllı QR Senkron v14</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -37,7 +37,6 @@
             <div class="flex items-center space-x-2">
                 <div class="w-2.5 h-2.5 rounded-full bg-[#ccff00]"></div>
                 <span class="text-xs sm:text-sm font-extrabold tracking-wide text-white">CepteBütçe</span>
-                <!-- Otomatik Durum Rozeti -->
                 <span id="sync-status" class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 transition">Bulut: Senkron</span>
             </div>
             <div class="flex items-center space-x-2.5 bg-[#18181c] px-3 py-1.5 rounded-2xl border border-zinc-800">
@@ -256,11 +255,16 @@
             { id: 1607, name: "Enpara Kredi", amount: 20000, type: "Gider", category: "Gider", date: "Aralık 2027" }
         ];
 
-        // Tam Otomatik Bulut Anahtarı (Sabit ve Ortak)
-        const MASTER_BLOB_KEY = "cep_butce_global_sync_v13";
-        
+        // URL hash üzerinden blob ID kontrolü
+        let hash = window.location.hash;
+        let urlParams = new URLSearchParams(hash.replace('#', ''));
+        let urlBlobId = urlParams.get('blob');
+        if (urlBlobId) {
+            localStorage.setItem('cep_blob_id', urlBlobId);
+        }
+
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v13', 'cep_butce_excel_v12', 'cep_butce_excel_v11', 'cep_butce_excel_v10', 'cep_butce_excel_v9'];
+        const keysToCheck = ['cep_butce_excel_v14', 'cep_butce_excel_v13', 'cep_butce_excel_v12', 'cep_butce_excel_v11', 'cep_butce_excel_v10'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -287,12 +291,7 @@
         }
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
-        // Arka Planda Otomatik Bulut Yönetimi (Hiçbir kullanıcı müdahalesi gerektirmez)
-        async function getCloudId() {
-            let id = localStorage.getItem(MASTER_BLOB_KEY);
-            if (id) return id;
-
-            // Eğer kayıtlı ID yoksa bulutta ortak oda ara veya oluştur
+        async function createCloudBlob() {
             try {
                 let res = await fetch('https://jsonblob.com/api/jsonBlob', {
                     method: 'POST',
@@ -303,7 +302,8 @@
                     let loc = res.headers.get('Location');
                     if(loc) {
                         let newId = loc.split('/').pop();
-                        localStorage.setItem(MASTER_BLOB_KEY, newId);
+                        localStorage.setItem('cep_blob_id', newId);
+                        window.location.hash = 'blob=' + newId;
                         return newId;
                     }
                 }
@@ -313,36 +313,51 @@
 
         async function saveState() {
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v13', JSON.stringify(state));
-            
-            // Arka planda sessizce buluta gönder
+            localStorage.setItem('cep_butce_excel_v14', JSON.stringify(state));
+            await pushToCloud();
+        }
+
+        async function pushToCloud() {
+            let blobId = localStorage.getItem('cep_blob_id');
+            if (!blobId) {
+                blobId = await createCloudBlob();
+                if (!blobId) return;
+            }
+
             try {
-                let blobId = await getCloudId();
-                if(blobId) {
-                    await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                        body: JSON.stringify(state)
-                    });
+                let res = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(state)
+                });
+                if (res.status === 404) {
+                    localStorage.removeItem('cep_blob_id');
+                    await createCloudBlob();
+                    await pushToCloud();
                 }
             } catch(e) {}
         }
 
         async function backgroundAutoSync() {
-            try {
-                let blobId = await getCloudId();
-                if (!blobId) return;
+            let blobId = localStorage.getItem('cep_blob_id');
+            if (!blobId) {
+                await createCloudBlob();
+                return;
+            }
 
+            try {
                 let res = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`, { headers: { 'Accept': 'application/json' } });
                 if(res.ok) {
                     let cloudData = await res.json();
                     if(cloudData && cloudData.lastUpdated) {
                         if(cloudData.lastUpdated > (state.lastUpdated || 0)) {
                             state = cloudData;
-                            localStorage.setItem('cep_butce_excel_v13', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v14', JSON.stringify(state));
                             renderView();
                         }
                     }
+                } else if(res.status === 404) {
+                    await pushToCloud();
                 }
             } catch(e){}
         }
@@ -584,11 +599,21 @@
                     </div>
                 `;
             } else if (currentTab === 'settings') {
+                let currentSyncLink = window.location.origin + window.location.pathname + '#blob=' + (localStorage.getItem('cep_blob_id') || '');
+                let qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(currentSyncLink)}`;
                 container.innerHTML = `
                     <div class="max-w-xl mx-auto space-y-4">
-                        <h2 class="text-sm sm:text-lg font-bold text-white mb-2">Ayarlar & Güvenlik</h2>
+                        <h2 class="text-sm sm:text-lg font-bold text-white mb-2">Ayarlar & QR Cihaz Eşleştirme</h2>
                         <div class="bg-[#18181c] border border-zinc-800/60 rounded-3xl p-5 space-y-4">
                             
+                            <div class="space-y-3 pb-3 border-b border-zinc-800 text-center">
+                                <span class="text-xs sm:text-sm font-bold text-white block">📱 Telefonla Otomatik Eşleştir (QR Kod)</span>
+                                <p class="text-[10px] text-zinc-400">Telefonunuzun kamerasıyla aşağıdaki QR kodu taratarak bilgisayarınızla anında senkronize edebilirsiniz.</p>
+                                <div class="bg-white p-3 inline-block rounded-2xl shadow-md">
+                                    <img src="${qrApiUrl}" alt="Eşitleme QR Kodu" class="w-32 h-32 mx-auto">
+                                </div>
+                            </div>
+
                             <div class="space-y-2.5 pb-3 border-b border-zinc-800">
                                 <span class="text-xs sm:text-sm font-bold text-white block">Uygulama Şifresi</span>
                                 <div class="flex space-x-2">
@@ -765,20 +790,32 @@
             saveState(); closeFundModal(); renderView();
         }
 
+        // Silme işlemine yanlışlıkla dokunmalara karşı onay uyarısı eklendi
         function deleteTx(id) {
-            state.transactions = state.transactions.filter(t => t.id !== id);
-            saveState(); renderView();
+            let tx = state.transactions.find(t => t.id === id);
+            let txName = tx ? tx.name : "Bu işlemi";
+            if(confirm(`"${txName}" silinecek. Emin misiniz?`)) {
+                state.transactions = state.transactions.filter(t => t.id !== id);
+                saveState(); 
+                renderView();
+            }
         }
 
         function deleteTxFromModal(id) {
-            deleteTx(id);
-            renderModalList();
+            let tx = state.transactions.find(t => t.id === id);
+            let txName = tx ? tx.name : "Bu işlemi";
+            if(confirm(`"${txName}" silinecek. Emin misiniz?`)) {
+                state.transactions = state.transactions.filter(t => t.id !== id);
+                saveState(); 
+                renderModalList();
+                renderView();
+            }
         }
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v13');
-                localStorage.removeItem(MASTER_BLOB_KEY);
+                localStorage.removeItem('cep_butce_excel_v14');
+                localStorage.removeItem('cep_blob_id');
                 location.reload();
             }
         }
@@ -788,7 +825,7 @@
             checkLock();
             await backgroundAutoSync();
             renderView();
-            // Her 4 saniyede bir arkada sessizce eşitler
+            // Her 4 saniyede bir arkada sessizce eşitler ve silinen/eklenenleri anında yansıtır
             setInterval(backgroundAutoSync, 4000);
         }
 
