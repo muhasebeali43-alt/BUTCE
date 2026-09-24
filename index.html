@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v79</title>
+    <title>CepteBütçe - Tam Senkron v80</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
@@ -41,10 +41,13 @@
 
         <!-- Üst Ay Seçim Barı -->
         <div class="px-4 sm:px-6 pt-3.5 pb-3 flex justify-between items-center bg-[#0f0f12] z-20 border-b border-zinc-800/40">
-            <div class="flex items-center space-x-2">
-                <div class="w-2.5 h-2.5 rounded-full bg-[#ccff00]"></div>
-                <span class="text-xs sm:text-sm font-extrabold tracking-wide text-white">CepteBütçe</span>
-                <span id="sync-status" class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 transition">Canlı Bağlı</span>
+            <div class="flex flex-col">
+                <div class="flex items-center space-x-2">
+                    <div class="w-2.5 h-2.5 rounded-full bg-[#ccff00]"></div>
+                    <span class="text-xs sm:text-sm font-extrabold tracking-wide text-white">CepteBütçe</span>
+                    <span id="sync-status" class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 transition">Canlı Bağlı</span>
+                </div>
+                <div id="today-date-display" class="text-[9px] sm:text-[10px] text-zinc-400 font-semibold mt-1 ml-4 tracking-wide"></div>
             </div>
             <div class="flex items-center space-x-2">
                 <div id="top-lock-btn-container"></div>
@@ -173,7 +176,7 @@
     <script>
         // Tüm geçmiş versiyonları tarayarak verilerini eksiksiz kurtarıyoruz
         let savedData = null;
-        const allPossibleKeys = ['cep_butce_excel_v79', 'cep_butce_excel_v78', 'cep_butce_excel_v77', 'cep_butce_excel_v76', 'cep_butce_excel_v75', 'cep_butce_excel_v74', 'cep_butce_excel_v73', 'cep_butce_excel_v72'];
+        const allPossibleKeys = ['cep_butce_excel_v80', 'cep_butce_excel_v79', 'cep_butce_excel_v78', 'cep_butce_excel_v77', 'cep_butce_excel_v76', 'cep_butce_excel_v75', 'cep_butce_excel_v74', 'cep_butce_excel_v73'];
         
         for (let k of allPossibleKeys) {
             let data = localStorage.getItem(k);
@@ -309,7 +312,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v79', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v80', JSON.stringify(state));
                             checkLock();
                             renderView();
                         } else {
@@ -341,7 +344,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v79', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v80', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -360,7 +363,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v79', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v80', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -383,8 +386,12 @@
         let activeModalType = 'Gelir';
         
         const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-        let activeMonthIndex = 8; // Eylül (2026)
-        let activeYear = 2026;
+        const days = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+        
+        // OTOMATİK AY ALGILAMA SİSTEMİ (Gerçek zamanlı saati okur)
+        const currentSystemDate = new Date();
+        let activeMonthIndex = currentSystemDate.getMonth();
+        let activeYear = currentSystemDate.getFullYear();
 
         let touchStartX = 0;
         let touchStartY = 0;
@@ -414,6 +421,17 @@
                     }
                 }
             }, { passive: true });
+        }
+
+        function updateTodayDate() {
+            let el = document.getElementById('today-date-display');
+            if(el) {
+                let d = currentSystemDate.getDate();
+                let m = months[currentSystemDate.getMonth()];
+                let y = currentSystemDate.getFullYear();
+                let dayName = days[currentSystemDate.getDay()];
+                el.innerText = `Bugün: ${d} ${m} ${y} ${dayName}`;
+            }
         }
 
         function tryUnlock() {
@@ -536,6 +554,7 @@
         }
 
         function renderView() {
+            updateTodayDate();
             updateMonthDisplay();
             updateTopLockBtn();
             let container = document.getElementById('app-view');
