@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v75</title>
+    <title>CepteBütçe - Tam Senkron v76</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
@@ -173,7 +173,7 @@
     <script>
         // Tüm geçmiş versiyonları tarayarak verilerini eksiksiz kurtarıyoruz
         let savedData = null;
-        const allPossibleKeys = ['cep_butce_excel_v74', 'cep_butce_excel_v73', 'cep_butce_excel_v72', 'cep_butce_excel_v71', 'cep_butce_excel_v70', 'cep_butce_excel_v69', 'cep_butce_excel_v68', 'cep_butce_excel_v67'];
+        const allPossibleKeys = ['cep_butce_excel_v76', 'cep_butce_excel_v75', 'cep_butce_excel_v74', 'cep_butce_excel_v73', 'cep_butce_excel_v72', 'cep_butce_excel_v71', 'cep_butce_excel_v70', 'cep_butce_excel_v69'];
         
         for (let k of allPossibleKeys) {
             let data = localStorage.getItem(k);
@@ -225,8 +225,8 @@
 
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
-        // Excel tablosuyla tam eşleşen v75 verilerini yüklüyoruz (FON düzgünce gider olarak etiketlendi)
-        if(!state.importedProjV75) {
+        // Excel tablosuyla tam eşleşen şablon verileri (FON düzgünce gider olarak etiketlendi)
+        if(!state.importedProjV76) {
             // Önceki otomatik eklenen tüm şablon kalemleri temizle
             state.transactions = state.transactions.filter(t => 
                 !(t.name && (t.name.includes('MAAŞ') || t.name === 'NEJAT' || t.name === 'KİRA' || t.name === 'FON' || t.name === 'TEB' || t.name === 'YKB' || t.name === 'ENPARA'))
@@ -262,10 +262,10 @@
                     }
                 });
             });
-            state.importedProjV75 = true;
+            state.importedProjV76 = true;
         }
 
-        // Firebase Firestore Otomatik Entegrasyonu (v75)
+        // Firebase Firestore Otomatik Entegrasyonu
         const firebaseConfig = {
             apiKey: "AIzaSyCLxx02KpBH2MFGXEePIb-w79FVwOBW4GQ",
             authDomain: "butce-24f0f.firebaseapp.com",
@@ -349,7 +349,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v75', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v76', JSON.stringify(state));
                             checkLock();
                             renderView();
                         } else {
@@ -381,7 +381,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v75', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v76', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -400,7 +400,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v75', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v76', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -525,7 +525,6 @@
             return year * 12 + mIndex;
         }
 
-        // Excel tablosundaki gibi o aya ait aylık net KALAN (Gelir - Gider) hesabı
         function calculateMonthFinancials(targetMonthStr) {
             let mTx = state.transactions.filter(t => t.date === targetMonthStr);
             let buAyGelir = mTx.filter(t => t.type === 'Gelir').reduce((a, b) => a + b.amount, 0);
@@ -551,34 +550,60 @@
             updateTopLockBtn();
             let container = document.getElementById('app-view');
             if(!container) return;
-            let activeMonthStr = getActiveMonthString();
             
+            let activeMonthStr = getActiveMonthString();
             let fin = calculateMonthFinancials(activeMonthStr);
             let gelirler = fin.buAyGelir;
             let giderler = fin.buAyGider;
             let toplamBakiye = fin.toplamBakiye;
-            
             let monthTx = state.transactions.filter(t => t.date === activeMonthStr);
 
-            let historyList = state.funds.history || [];
-            historyList.sort((a, b) => new Date(a.date) - new Date(b.date));
+            // TAM DİNAMİK ZAMAN ÇİZELGESİ: Güncel Bakiye ve Kâr Hesaplaması
+            let allEvents = [];
+            (state.funds.history || []).forEach(h => {
+                allEvents.push({ type: 'update', time: h.id, val: h.balance });
+            });
+            (state.transactions || []).filter(t => t.category === 'Fon Yatırımı' || t.category === 'Fondan Çek').forEach(t => {
+                if (t.category === 'Fon Yatırımı') allEvents.push({ type: 'invest', time: t.id, val: t.amount });
+                if (t.category === 'Fondan Çek') allEvents.push({ type: 'withdraw', time: t.id, val: t.amount });
+            });
             
-            let latestBalance = historyList.length > 0 ? historyList[historyList.length - 1].balance : 762000;
-            
-            let totalInvested = state.transactions.filter(t => t.category === 'Fon Yatırımı').reduce((a,b) => a + b.amount, 0);
-            let totalWithdrawn = state.transactions.filter(t => t.category === 'Fondan Çek').reduce((a,b) => a + b.amount, 0);
+            // Tüm işlemleri tam kronolojik sıraya diz (Oluşturulma saniyesine göre)
+            allEvents.sort((a, b) => a.time - b.time);
 
-            let basePrincipal = state.funds.principal !== undefined ? state.funds.principal : 761167;
-            let principal = basePrincipal + totalInvested - totalWithdrawn;
-            let fonTotal = latestBalance;
+            let expectedBal = 0;
+            let currentBal = 0;
+            let lastProfit = 0;
+            let hasAnyUpdate = false;
 
-            let gunlukKar = 0;
-            if (historyList.length >= 2) {
-                let latest = historyList[historyList.length - 1];
-                let prev = historyList[historyList.length - 2];
-                gunlukKar = latest.balance - prev.balance;
+            for (let e of allEvents) {
+                if (e.type === 'update') {
+                    if (hasAnyUpdate) {
+                        lastProfit = e.val - expectedBal; // Sadece piyasa hareketinden gelen saf kâr
+                    } else {
+                        lastProfit = expectedBal > 0 ? e.val - expectedBal : 0;
+                        hasAnyUpdate = true;
+                    }
+                    currentBal = e.val;
+                    expectedBal = e.val;
+                } else if (e.type === 'invest') {
+                    currentBal += e.val;
+                    expectedBal += e.val;
+                } else if (e.type === 'withdraw') {
+                    currentBal -= e.val;
+                    expectedBal -= e.val;
+                }
             }
 
+            let fonTotal = currentBal; // Gerçek zamanlı güncel fon bakiyesi
+            let gunlukKar = lastProfit; // Kullanıcının girdiği iki bakiye arasındaki net kâr
+
+            // Anapara ve Toplam Kâr
+            let basePrincipal = state.funds.principal !== undefined ? state.funds.principal : 761167;
+            let totalInvested = state.transactions.filter(t => t.category === 'Fon Yatırımı').reduce((a,b) => a + b.amount, 0);
+            let totalWithdrawn = state.transactions.filter(t => t.category === 'Fondan Çek').reduce((a,b) => a + b.amount, 0);
+            let principal = basePrincipal + totalInvested - totalWithdrawn;
+            
             let toplamKar = fonTotal - principal;
 
             if (currentTab === 'home') {
@@ -717,9 +742,13 @@
                         amount: t.amount
                     }));
 
+                // Hareketleri ekranda listelerken zıplamaması için stabil sıralama
                 let combinedHistory = [...historyItems, ...fundTxItems]
                     .filter(item => item.monthStr === activeMonthStr)
-                    .sort((a, b) => b.sortDate - a.sortDate);
+                    .sort((a, b) => {
+                        if (b.sortDate !== a.sortDate) return b.sortDate - a.sortDate;
+                        return b.realId - a.realId;
+                    });
 
                 container.innerHTML = `
                     <div class="space-y-5 max-w-xl mx-auto">
