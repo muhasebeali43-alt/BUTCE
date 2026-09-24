@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v46</title>
+    <title>CepteBütçe - Tam Senkron v47</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
@@ -167,13 +167,15 @@
         ];
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v46', 'cep_butce_excel_v45', 'cep_butce_excel_v44', 'cep_butce_excel_v43', 'cep_butce_excel_v42'];
+        const keysToCheck = ['cep_butce_excel_v47', 'cep_butce_excel_v46', 'cep_butce_excel_v45', 'cep_butce_excel_v44', 'cep_butce_excel_v43'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
                 try {
                     let parsed = JSON.parse(data);
-                    if(parsed && parsed.transactions && parsed.transactions.length > 3) {
+                    if(parsed && parsed.transactions) {
+                        // OTOMATİK TEMİZLİK: Eski taslak fon yatırımı işlemlerini (ID'si 2000'den küçük olanları) tamamen ayıkla!
+                        parsed.transactions = parsed.transactions.filter(t => t.id > 2000);
                         savedData = parsed;
                         break;
                     }
@@ -212,7 +214,7 @@
             return totalInvested - totalWithdrawn;
         }
 
-        // Firebase Firestore Otomatik Entegrasyonu (v46)
+        // Firebase Firestore Otomatik Entegrasyonu (v47)
         const firebaseConfig = {
             apiKey: "AIzaSyCLxx02KpBH2MFGXEePIb-w79FVwOBW4GQ",
             authDomain: "butce-24f0f.firebaseapp.com",
@@ -285,6 +287,8 @@
                     if (doc.exists) {
                         let cloudData = doc.data();
                         if (cloudData && cloudData.transactions) {
+                            // Bulut verisindeki eski taslakları da temizle
+                            cloudData.transactions = cloudData.transactions.filter(t => t.id > 2000);
                             state = cloudData;
                             if(!state.funds.history) state.funds.history = [];
                             if(state.funds.history.length === 0) {
@@ -294,7 +298,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v46', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v47', JSON.stringify(state));
                             checkLock();
                             renderView();
                         }
@@ -313,6 +317,7 @@
                         }
                         if (cloudData && cloudData.transactions) {
                             isSyncingFromCloud = true;
+                            cloudData.transactions = cloudData.transactions.filter(t => t.id > 2000);
                             state = cloudData;
                             if(!state.funds.history) state.funds.history = [];
                             if(state.funds.history.length === 0) {
@@ -322,7 +327,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v46', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v47', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -341,7 +346,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v46', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v47', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -1026,7 +1031,7 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v46');
+                localStorage.removeItem('cep_butce_excel_v47');
                 location.reload();
             }
         }
