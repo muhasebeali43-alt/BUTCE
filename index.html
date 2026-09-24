@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v56</title>
+    <title>CepteBütçe - Tam Senkron v57</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
@@ -182,7 +182,7 @@
         ];
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v56', 'cep_butce_excel_v55', 'cep_butce_excel_v54', 'cep_butce_excel_v53', 'cep_butce_excel_v52'];
+        const keysToCheck = ['cep_butce_excel_v57', 'cep_butce_excel_v56', 'cep_butce_excel_v55', 'cep_butce_excel_v54', 'cep_butce_excel_v53'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -224,7 +224,7 @@
 
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
-        // Firebase Firestore Otomatik Entegrasyonu (v56)
+        // Firebase Firestore Otomatik Entegrasyonu (v57)
         const firebaseConfig = {
             apiKey: "AIzaSyCLxx02KpBH2MFGXEePIb-w79FVwOBW4GQ",
             authDomain: "butce-24f0f.firebaseapp.com",
@@ -313,7 +313,7 @@
                                 state.funds.history.sort((a, b) => new Date(a.date) - new Date(b.date));
                                 state.funds.currentBalance = state.funds.history[state.funds.history.length - 1].balance;
                             }
-                            localStorage.setItem('cep_butce_excel_v56', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v57', JSON.stringify(state));
                             checkLock();
                             renderView();
                         }
@@ -348,7 +348,7 @@
                                 state.funds.history.sort((a, b) => new Date(a.date) - new Date(b.date));
                                 state.funds.currentBalance = state.funds.history[state.funds.history.length - 1].balance;
                             }
-                            localStorage.setItem('cep_butce_excel_v56', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v57', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -367,7 +367,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v56', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v57', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -946,31 +946,15 @@
             if(editingTxId !== null) {
                 let oldTx = state.transactions.find(t => t.id === editingTxId);
                 if(oldTx) {
-                    if(oldTx.category === 'Fon Yatırımı') state.funds.currentBalance -= oldTx.amount;
-                    if(oldTx.category === 'Fondan Çek') state.funds.currentBalance += oldTx.amount;
-
                     oldTx.name = name;
                     oldTx.amount = amount;
                     oldTx.type = type;
                     oldTx.category = cat;
-
-                    if(cat === 'Fon Yatırımı') state.funds.currentBalance += amount;
-                    if(cat === 'Fondan Çek') state.funds.currentBalance -= amount;
                 }
             } else {
                 state.transactions.push({ id: Date.now(), name, amount, type, category: cat, date: getActiveMonthString() });
-                
-                let todayStr = new Date().toISOString().split('T')[0];
-                if(cat === 'Fon Yatırımı') {
-                    state.funds.currentBalance = (state.funds.currentBalance || 0) + amount;
-                    state.funds.history.push({ id: Date.now(), date: todayStr, balance: state.funds.currentBalance });
-                } else if(cat === 'Fondan Çek') {
-                    state.funds.currentBalance = (state.funds.currentBalance || 0) - amount;
-                    state.funds.history.push({ id: Date.now(), date: todayStr, balance: state.funds.currentBalance });
-                }
             }
 
-            state.funds.history.sort((a, b) => new Date(a.date) - new Date(b.date));
             saveState(); closeModal(); renderView();
         }
 
@@ -1067,9 +1051,6 @@
             if(!tx) return;
             let txName = tx.name;
             if(confirm(`"${txName}" silinecek. Emin misiniz?`)) {
-                if(tx.category === 'Fon Yatırımı') state.funds.currentBalance -= tx.amount;
-                if(tx.category === 'Fondan Çek') state.funds.currentBalance += tx.amount;
-
                 state.transactions = state.transactions.filter(t => t.id !== id);
                 saveState(); 
                 renderView();
@@ -1081,9 +1062,6 @@
             if(!tx) return;
             let txName = tx.name;
             if(confirm(`"${txName}" silinecek. Emin misiniz?`)) {
-                if(tx.category === 'Fon Yatırımı') state.funds.currentBalance -= tx.amount;
-                if(tx.category === 'Fondan Çek') state.funds.currentBalance += tx.amount;
-
                 state.transactions = state.transactions.filter(t => t.id !== id);
                 saveState(); 
                 renderLogModal();
@@ -1093,7 +1071,7 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v56');
+                localStorage.removeItem('cep_butce_excel_v57');
                 location.reload();
             }
         }
