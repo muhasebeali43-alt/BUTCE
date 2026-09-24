@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v73</title>
+    <title>CepteBütçe - Tam Senkron v72</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
@@ -173,7 +173,7 @@
     <script>
         // Tüm geçmiş versiyonları tarayarak verilerini eksiksiz kurtarıyoruz
         let savedData = null;
-        const allPossibleKeys = ['cep_butce_excel_v72', 'cep_butce_excel_v71', 'cep_butce_excel_v70', 'cep_butce_excel_v69', 'cep_butce_excel_v68', 'cep_butce_excel_v67', 'cep_butce_excel_v66', 'cep_butce_excel_v65'];
+        const allPossibleKeys = ['cep_butce_excel_v71', 'cep_butce_excel_v70', 'cep_butce_excel_v69', 'cep_butce_excel_v68', 'cep_butce_excel_v67', 'cep_butce_excel_v66', 'cep_butce_excel_v65', 'cep_butce_excel_v64'];
         
         for (let k of allPossibleKeys) {
             let data = localStorage.getItem(k);
@@ -225,9 +225,9 @@
 
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
-        // Mükerrer kayıtları önlemek için eski otomatik verileri temizleyip Excel tablosuyla tam eşleşen v73 verilerini yüklüyoruz
-        if(!state.importedProjV73) {
-            // Önceki otomatik eklenen tüm şablon kalemleri temizle
+        // Doğru Tablo Verilerini Ay Ay Gelir/Gider Olarak Entegre Etme (v72 - Ocak FON düzeltmesi dahil)
+        if(!state.importedProjV72) {
+            // Eski hatalı projeksiyon importlarını temizle (varsa)
             state.transactions = state.transactions.filter(t => 
                 !(t.name && (t.name.includes('MAAŞ') || t.name === 'NEJAT' || t.name === 'KİRA' || t.name === 'FON' || t.name === 'TEB' || t.name === 'YKB' || t.name === 'ENPARA'))
             );
@@ -238,10 +238,10 @@
             ];
             
             const projRows = [
-                { name: "MAAŞ (7)", type: "Gelir", category: "Gelir", vals: [35000, 45000, 45000, 45000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000] },
-                { name: "MAAŞ (10)", type: "Gelir", category: "Gelir", vals: [45000, 45000, 45000, 45000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000] },
+                { name: "MAAŞ", type: "Gelir", category: "Gelir", vals: [35000, 45000, 45000, 45000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000] },
+                { name: "MAAŞ", type: "Gelir", category: "Gelir", vals: [45000, 45000, 45000, 45000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000] },
                 { name: "NEJAT", type: "Gelir", category: "Gelir", vals: [1200, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-                { name: "KİRA", type: "Gider", category: "Gider", vals: [15000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 27000, 27000] },
+                { name: "KİRA", type: "Gider", category: "Gider", vals: [15000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 27000, 27000, 27000] },
                 { name: "FON", type: "Gider", category: "Fon Yatırımı", vals: [27000, 27000, 27000, 27000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000] },
                 { name: "TEB", type: "Gider", category: "Gider", vals: [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000] },
                 { name: "YKB", type: "Gider", category: "Gider", vals: [15000, 15000, 15000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000] },
@@ -262,10 +262,10 @@
                     }
                 });
             });
-            state.importedProjV73 = true;
+            state.importedProjV72 = true;
         }
 
-        // Firebase Firestore Otomatik Entegrasyonu (v73)
+        // Firebase Firestore Otomatik Entegrasyonu (v72)
         const firebaseConfig = {
             apiKey: "AIzaSyCLxx02KpBH2MFGXEePIb-w79FVwOBW4GQ",
             authDomain: "butce-24f0f.firebaseapp.com",
@@ -349,7 +349,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v73', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v72', JSON.stringify(state));
                             checkLock();
                             renderView();
                         } else {
@@ -381,7 +381,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v73', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v72', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -400,7 +400,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v73', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v72', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
