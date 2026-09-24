@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v45</title>
+    <title>CepteBütçe - Tam Senkron v46</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
@@ -167,7 +167,7 @@
         ];
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v45', 'cep_butce_excel_v44', 'cep_butce_excel_v43', 'cep_butce_excel_v42', 'cep_butce_excel_v41'];
+        const keysToCheck = ['cep_butce_excel_v46', 'cep_butce_excel_v45', 'cep_butce_excel_v44', 'cep_butce_excel_v43', 'cep_butce_excel_v42'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -202,7 +202,6 @@
 
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
-        // Otomatik Anapara Hesaplama Fonksiyonu (Yalnızca gerçek Fon Yatırımı ve Fondan Çek işlemleri üzerinden)
         function calculateTotalPrincipal() {
             let totalInvested = (state.transactions || [])
                 .filter(t => t.category === 'Fon Yatırımı')
@@ -210,13 +209,10 @@
             let totalWithdrawn = (state.transactions || [])
                 .filter(t => t.category === 'Fondan Çek')
                 .reduce((sum, t) => sum + t.amount, 0);
-            
-            let net = totalInvested - totalWithdrawn;
-            // Eğer hiç fon yatırımı eklenmemişse varsayılan olarak anapara 0 veya bakiye ile başlar.
-            return net;
+            return totalInvested - totalWithdrawn;
         }
 
-        // Firebase Firestore Otomatik Entegrasyonu (v45)
+        // Firebase Firestore Otomatik Entegrasyonu (v46)
         const firebaseConfig = {
             apiKey: "AIzaSyCLxx02KpBH2MFGXEePIb-w79FVwOBW4GQ",
             authDomain: "butce-24f0f.firebaseapp.com",
@@ -298,7 +294,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v45', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v46', JSON.stringify(state));
                             checkLock();
                             renderView();
                         }
@@ -326,7 +322,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v45', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v46', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -345,7 +341,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v45', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v46', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -376,7 +372,8 @@
 
         function initSwipeGestures() {
             let appView = document.getElementById('app-view');
-            if(!appView) return;
+            if(!appView || appView.dataset.swipeInit === 'true') return;
+            appView.dataset.swipeInit = 'true';
 
             appView.addEventListener('touchstart', (e) => {
                 touchStartX = e.changedTouches[0].screenX;
@@ -1029,7 +1026,7 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v45');
+                localStorage.removeItem('cep_butce_excel_v46');
                 location.reload();
             }
         }
