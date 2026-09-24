@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v40</title>
+    <title>CepteBütçe - Tam Senkron v42</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
@@ -272,7 +272,7 @@
         ];
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v40', 'cep_butce_excel_v39', 'cep_butce_excel_v38', 'cep_butce_excel_v37', 'cep_butce_excel_v36'];
+        const keysToCheck = ['cep_butce_excel_v42', 'cep_butce_excel_v41', 'cep_butce_excel_v40', 'cep_butce_excel_v39', 'cep_butce_excel_v38'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -288,28 +288,27 @@
 
         let state = savedData || {
             transactions: defaultTransactions,
-            funds: { currentBalance: 762000, principal: 761167, previousBalance: 761167, lastDate: new Date().toISOString().split('T')[0], history: [] },
+            funds: { currentBalance: 815066, principal: 814233, history: [{ id: Date.now(), date: new Date().toISOString().split('T')[0], balance: 815066, principal: 814233 }] },
             pin: "",
             lastUpdated: Date.now()
         };
 
-        if(!state.funds || state.funds.principal === undefined || state.funds.lastDate === undefined) {
-            let bal = state.funds?.currentBalance || 762000;
-            state.funds = { currentBalance: bal, principal: bal, previousBalance: bal, lastDate: new Date().toISOString().split('T')[0], history: [] };
+        if(!state.funds) {
+            state.funds = { currentBalance: 815066, principal: 814233, history: [] };
         }
         if(!state.funds.history) state.funds.history = [];
         if(state.funds.history.length === 0) {
             state.funds.history.push({
                 id: Date.now(),
-                date: state.funds.lastDate || new Date().toISOString().split('T')[0],
-                balance: state.funds.currentBalance,
-                principal: state.funds.principal
+                date: new Date().toISOString().split('T')[0],
+                balance: state.funds.currentBalance || 815066,
+                principal: state.funds.principal || 814233
             });
         }
 
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
-        // Firebase Firestore Otomatik Entegrasyonu (v40)
+        // Firebase Firestore Otomatik Entegrasyonu (v42)
         const firebaseConfig = {
             apiKey: "AIzaSyCLxx02KpBH2MFGXEePIb-w79FVwOBW4GQ",
             authDomain: "butce-24f0f.firebaseapp.com",
@@ -384,7 +383,15 @@
                         if (cloudData && cloudData.transactions) {
                             state = cloudData;
                             if(!state.funds.history) state.funds.history = [];
-                            localStorage.setItem('cep_butce_excel_v40', JSON.stringify(state));
+                            if(state.funds.history.length === 0) {
+                                state.funds.history.push({
+                                    id: Date.now(),
+                                    date: new Date().toISOString().split('T')[0],
+                                    balance: state.funds.currentBalance || 0,
+                                    principal: state.funds.principal || 0
+                                });
+                            }
+                            localStorage.setItem('cep_butce_excel_v42', JSON.stringify(state));
                             checkLock();
                             renderView();
                         }
@@ -405,7 +412,15 @@
                             isSyncingFromCloud = true;
                             state = cloudData;
                             if(!state.funds.history) state.funds.history = [];
-                            localStorage.setItem('cep_butce_excel_v40', JSON.stringify(state));
+                            if(state.funds.history.length === 0) {
+                                state.funds.history.push({
+                                    id: Date.now(),
+                                    date: new Date().toISOString().split('T')[0],
+                                    balance: state.funds.currentBalance || 0,
+                                    principal: state.funds.principal || 0
+                                });
+                            }
+                            localStorage.setItem('cep_butce_excel_v42', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -424,7 +439,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v40', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v42', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -602,9 +617,17 @@
 
             let fonTotal = state.funds.currentBalance || 0;
             let principal = state.funds.principal !== undefined ? state.funds.principal : fonTotal;
-            let prevBal = state.funds.previousBalance !== undefined ? state.funds.previousBalance : fonTotal;
 
-            let gunlukKar = fonTotal - prevBal;
+            let historyList = state.funds.history || [];
+            historyList.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            let gunlukKar = 0;
+            if (historyList.length >= 2) {
+                let latest = historyList[historyList.length - 1];
+                let prev = historyList[historyList.length - 2];
+                gunlukKar = latest.balance - prev.balance;
+            }
+
             let toplamKar = fonTotal - principal;
 
             if (currentTab === 'home') {
@@ -717,8 +740,33 @@
                     </div>
                 `;
             } else if (currentTab === 'fund') {
-                let historyList = state.funds.history || [];
-                let sortedHistory = [...historyList].sort((a, b) => new Date(b.date) - new Date(a.date));
+                // Combine history items and fund transactions (Fon Yatırımı / Fondan Çek)
+                let historyItems = (state.funds.history || []).map(h => ({
+                    id: 'hist_' + h.id,
+                    realId: h.id,
+                    isTx: false,
+                    date: h.date,
+                    sortDate: new Date(h.date).getTime() || 0,
+                    title: 'Fon Bakiye Güncellemesi',
+                    balance: h.balance,
+                    principal: h.principal
+                }));
+
+                let fundTxItems = (state.transactions || [])
+                    .filter(t => t.category === 'Fon Yatırımı' || t.category === 'Fondan Çek')
+                    .map(t => ({
+                        id: 'tx_' + t.id,
+                        realId: t.id,
+                        isTx: true,
+                        date: t.date,
+                        sortDate: parseMonthYear(t.date) * 86400000,
+                        title: t.name || (t.category === 'Fon Yatırımı' ? 'Yatan (Fon Yatırımı)' : 'Çekilen (Fondan Çek)'),
+                        category: t.category,
+                        amount: t.amount,
+                        type: t.type
+                    }));
+
+                let combinedHistory = [...historyItems, ...fundTxItems].sort((a, b) => b.sortDate - a.sortDate);
 
                 container.innerHTML = `
                     <div class="space-y-5 max-w-xl mx-auto">
@@ -750,22 +798,40 @@
                         <!-- Gün Gün Fon Hareketleri Bölümü -->
                         <div class="space-y-3 pt-2">
                             <div class="flex justify-between items-center">
-                                <h3 class="text-xs font-extrabold text-zinc-400 tracking-wider uppercase">Gün Gün Fon Hareketleri & Geçmiş</h3>
+                                <h3 class="text-xs font-extrabold text-zinc-400 tracking-wider uppercase">Gün Gün Fon Hareketleri & Geçmiş (Yatan / Çekilen)</h3>
                             </div>
                             <div class="space-y-2">
-                                ${sortedHistory.length === 0 ? '<p class="text-zinc-500 text-xs text-center py-6">Henüz fon hareket kaydı bulunmuyor.</p>' :
-                                    sortedHistory.map(h => `
-                                        <div class="bg-[#18181c] border border-zinc-800/80 p-4 rounded-2xl flex justify-between items-center">
-                                            <div>
-                                                <div class="text-xs font-bold text-white">${h.date}</div>
-                                                <div class="text-[11px] text-zinc-400 mt-0.5">Bakiye: <span class="text-purple-300 font-semibold">${h.balance.toLocaleString('tr-TR', {maximumFractionDigits: 0})} ₺</span> · Anapara: ${h.principal.toLocaleString('tr-TR', {maximumFractionDigits: 0})} ₺</div>
-                                            </div>
-                                            <div class="flex items-center space-x-2">
-                                                <button onclick="openEditFundHistory(${h.id})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1.5 rounded-xl text-xs font-semibold">Düzenle</button>
-                                                <button onclick="deleteFundHistory(${h.id})" class="w-7 h-7 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-xs font-bold">✕</button>
-                                            </div>
-                                        </div>
-                                    `).join('')}
+                                ${combinedHistory.length === 0 ? '<p class="text-zinc-500 text-xs text-center py-6">Henüz fon hareket kaydı bulunmuyor.</p>' :
+                                    combinedHistory.map(item => {
+                                        if(item.isTx) {
+                                            let isInvestment = item.category === 'Fon Yatırımı';
+                                            return `
+                                                <div class="bg-[#18181c] border border-zinc-800/80 p-4 rounded-2xl flex justify-between items-center">
+                                                    <div>
+                                                        <div class="text-xs font-bold text-white">${item.date} · <span class="${isInvestment ? 'text-emerald-400' : 'text-amber-400'}">${isInvestment ? '🟢 Yatan (Fon Yatırımı)' : '🟠 Çekilen (Fondan Çek)'}</span></div>
+                                                        <div class="text-[11px] text-zinc-400 mt-0.5">${item.title}: <span class="font-semibold text-white">${item.amount.toLocaleString('tr-TR', {maximumFractionDigits: 0})} ₺</span></div>
+                                                    </div>
+                                                    <div class="flex items-center space-x-2">
+                                                        <button onclick="openEditModal(${item.realId})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1.5 rounded-xl text-xs font-semibold">Düzenle</button>
+                                                        <button onclick="deleteTx(${item.realId})" class="w-7 h-7 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-xs font-bold">✕</button>
+                                                    </div>
+                                                </div>
+                                            `;
+                                        } else {
+                                            return `
+                                                <div class="bg-[#18181c] border border-zinc-800/80 p-4 rounded-2xl flex justify-between items-center">
+                                                    <div>
+                                                        <div class="text-xs font-bold text-white">${item.date} · <span class="text-purple-400">📊 Bakiye Güncellemesi</span></div>
+                                                        <div class="text-[11px] text-zinc-400 mt-0.5">Bakiye: <span class="text-purple-300 font-semibold">${item.balance.toLocaleString('tr-TR', {maximumFractionDigits: 0})} ₺</span> · Anapara: ${item.principal.toLocaleString('tr-TR', {maximumFractionDigits: 0})} ₺</div>
+                                                    </div>
+                                                    <div class="flex items-center space-x-2">
+                                                        <button onclick="openEditFundHistory(${item.realId})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1.5 rounded-xl text-xs font-semibold">Düzenle</button>
+                                                        <button onclick="deleteFundHistory(${item.realId})" class="w-7 h-7 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-xs font-bold">✕</button>
+                                                    </div>
+                                                </div>
+                                            `;
+                                        }
+                                    }).join('')}
                             </div>
                         </div>
                     </div>
@@ -1021,11 +1087,9 @@
 
             state.funds.history.sort((a, b) => new Date(a.date) - new Date(b.date));
             let latest = state.funds.history[state.funds.history.length - 1];
-            let prev = state.funds.history.length > 1 ? state.funds.history[state.funds.history.length - 2] : latest;
 
             state.funds.currentBalance = latest.balance;
             state.funds.principal = latest.principal;
-            state.funds.previousBalance = prev.balance;
             state.funds.lastDate = latest.date;
 
             saveState(); 
@@ -1039,15 +1103,12 @@
                 if(state.funds.history.length > 0) {
                     state.funds.history.sort((a, b) => new Date(a.date) - new Date(b.date));
                     let latest = state.funds.history[state.funds.history.length - 1];
-                    let prev = state.funds.history.length > 1 ? state.funds.history[state.funds.history.length - 2] : latest;
                     state.funds.currentBalance = latest.balance;
                     state.funds.principal = latest.principal;
-                    state.funds.previousBalance = prev.balance;
                     state.funds.lastDate = latest.date;
                 } else {
                     state.funds.currentBalance = 0;
                     state.funds.principal = 0;
-                    state.funds.previousBalance = 0;
                 }
                 saveState();
                 renderView();
@@ -1095,7 +1156,7 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v40');
+                localStorage.removeItem('cep_butce_excel_v42');
                 location.reload();
             }
         }
