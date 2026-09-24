@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v63</title>
+    <title>CepteBütçe - Tam Senkron v64</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
@@ -182,7 +182,7 @@
         ];
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v63', 'cep_butce_excel_v62', 'cep_butce_excel_v61', 'cep_butce_excel_v60', 'cep_butce_excel_v59'];
+        const keysToCheck = ['cep_butce_excel_v64', 'cep_butce_excel_v63', 'cep_butce_excel_v62', 'cep_butce_excel_v61', 'cep_butce_excel_v60'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -199,15 +199,15 @@
 
         let state = savedData || {
             transactions: defaultTransactions,
-            funds: { currentBalance: 762000, principal: 761167, history: [{ id: Date.now(), date: "2026-09-24", balance: 762000 }] },
+            funds: { currentBalance: 762000, principal: 606610, history: [{ id: Date.now(), date: "2026-09-24", balance: 762000 }] },
             pin: "",
             lastUpdated: Date.now()
         };
 
         if(!state.funds) {
-            state.funds = { currentBalance: 762000, principal: 761167, history: [] };
+            state.funds = { currentBalance: 762000, principal: 606610, history: [] };
         }
-        if(state.funds.principal === undefined) state.funds.principal = 761167;
+        if(state.funds.principal === undefined || state.funds.principal > 1000000) state.funds.principal = 606610;
         if(!state.funds.history) state.funds.history = [];
         if(state.funds.history.length === 0) {
             state.funds.history.push({
@@ -224,7 +224,7 @@
 
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
-        // Firebase Firestore Otomatik Entegrasyonu (v63)
+        // Firebase Firestore Otomatik Entegrasyonu (v64)
         const firebaseConfig = {
             apiKey: "AIzaSyCLxx02KpBH2MFGXEePIb-w79FVwOBW4GQ",
             authDomain: "butce-24f0f.firebaseapp.com",
@@ -299,8 +299,8 @@
                         if (cloudData && cloudData.transactions) {
                             cloudData.transactions = cloudData.transactions.filter(t => t.id > 2000);
                             state = cloudData;
-                            if(!state.funds) state.funds = { currentBalance: 762000, principal: 761167, history: [] };
-                            if(state.funds.principal === undefined) state.funds.principal = 761167;
+                            if(!state.funds) state.funds = { currentBalance: 762000, principal: 606610, history: [] };
+                            if(state.funds.principal === undefined || state.funds.principal > 1000000) state.funds.principal = 606610;
                             if(!state.funds.history) state.funds.history = [];
                             if(state.funds.history.length === 0) {
                                 state.funds.history.push({
@@ -313,7 +313,7 @@
                                 state.funds.history.sort((a, b) => new Date(a.date) - new Date(b.date));
                                 state.funds.currentBalance = state.funds.history[state.funds.history.length - 1].balance;
                             }
-                            localStorage.setItem('cep_butce_excel_v63', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v64', JSON.stringify(state));
                             checkLock();
                             renderView();
                         }
@@ -334,8 +334,8 @@
                             isSyncingFromCloud = true;
                             cloudData.transactions = cloudData.transactions.filter(t => t.id > 2000);
                             state = cloudData;
-                            if(!state.funds) state.funds = { currentBalance: 762000, principal: 761167, history: [] };
-                            if(state.funds.principal === undefined) state.funds.principal = 761167;
+                            if(!state.funds) state.funds = { currentBalance: 762000, principal: 606610, history: [] };
+                            if(state.funds.principal === undefined || state.funds.principal > 1000000) state.funds.principal = 606610;
                             if(!state.funds.history) state.funds.history = [];
                             if(state.funds.history.length === 0) {
                                 state.funds.history.push({
@@ -348,7 +348,7 @@
                                 state.funds.history.sort((a, b) => new Date(a.date) - new Date(b.date));
                                 state.funds.currentBalance = state.funds.history[state.funds.history.length - 1].balance;
                             }
-                            localStorage.setItem('cep_butce_excel_v63', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v64', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -367,7 +367,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v63', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v64', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -563,7 +563,7 @@
             }
 
             let fonTotal = state.funds.currentBalance || 0;
-            let principal = state.funds.principal || 0;
+            let principal = state.funds.principal || 606610;
 
             // Günlük Kâr: Son iki bakiye kaydı arasındaki fark
             let gunlukKar = 0;
@@ -948,7 +948,7 @@
             if(editingTxId !== null) {
                 let oldTx = state.transactions.find(t => t.id === editingTxId);
                 if(oldTx) {
-                    // Eski işlemin fon bakiyesi ve anapara üzerindeki etkisini geri al
+                    // Eski etkinin tersini uygula
                     if(oldTx.category === 'Fon Yatırımı') {
                         state.funds.currentBalance -= oldTx.amount;
                         state.funds.principal -= oldTx.amount;
@@ -963,7 +963,7 @@
                     oldTx.type = type;
                     oldTx.category = cat;
 
-                    // Yeni işlemin fon bakiyesi ve anapara üzerindeki etkisini uygula
+                    // Yeni etkiyi uygula
                     if(cat === 'Fon Yatırımı') {
                         state.funds.currentBalance += amount;
                         state.funds.principal += amount;
@@ -976,13 +976,13 @@
             } else {
                 state.transactions.push({ id: Date.now(), name, amount, type, category: cat, date: getActiveMonthString() });
                 
-                // Fon hareketi (Yatırım / Çekim) olunca güncel bakiye ve anapara doğrudan değişir
+                // Fon hareketi olunca güncel bakiye ve anapara güncellenir
                 if(cat === 'Fon Yatırımı') {
                     state.funds.currentBalance = (state.funds.currentBalance || 0) + amount;
-                    state.funds.principal = (state.funds.principal || 0) + amount;
+                    state.funds.principal = (state.funds.principal || 606610) + amount;
                 } else if(cat === 'Fondan Çek') {
                     state.funds.currentBalance = (state.funds.currentBalance || 0) - amount;
-                    state.funds.principal = (state.funds.principal || 0) - amount;
+                    state.funds.principal = (state.funds.principal || 606610) - amount;
                 }
             }
 
@@ -990,7 +990,7 @@
         }
 
         function openPrincipalModal() {
-            document.getElementById('p-amount').value = state.funds.principal || 0;
+            document.getElementById('p-amount').value = state.funds.principal || 606610;
             document.getElementById('principal-modal').style.display = 'flex';
         }
 
@@ -1120,7 +1120,7 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v63');
+                localStorage.removeItem('cep_butce_excel_v64');
                 location.reload();
             }
         }
