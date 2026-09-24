@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v71</title>
+    <title>CepteBütçe - Tam Senkron v74</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
@@ -173,7 +173,7 @@
     <script>
         // Tüm geçmiş versiyonları tarayarak verilerini eksiksiz kurtarıyoruz
         let savedData = null;
-        const allPossibleKeys = ['cep_butce_excel_v70', 'cep_butce_excel_v69', 'cep_butce_excel_v68', 'cep_butce_excel_v67', 'cep_butce_excel_v66', 'cep_butce_excel_v65', 'cep_butce_excel_v64', 'cep_butce_excel_v63'];
+        const allPossibleKeys = ['cep_butce_excel_v73', 'cep_butce_excel_v72', 'cep_butce_excel_v71', 'cep_butce_excel_v70', 'cep_butce_excel_v69', 'cep_butce_excel_v68', 'cep_butce_excel_v67', 'cep_butce_excel_v66'];
         
         for (let k of allPossibleKeys) {
             let data = localStorage.getItem(k);
@@ -225,18 +225,24 @@
 
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
-        // Otomatik Projeksiyon Verilerini Ay Ay Gelir/Gider Olarak Entegre Etme (v71)
-        if(!state.importedProjV71) {
+        // Excel tablosuyla tam eşleşen v74 verilerini yüklüyoruz
+        if(!state.importedProjV74) {
+            // Önceki otomatik eklenen tüm şablon kalemleri temizle
+            state.transactions = state.transactions.filter(t => 
+                !(t.name && (t.name.includes('MAAŞ') || t.name === 'NEJAT' || t.name === 'KİRA' || t.name === 'FON' || t.name === 'TEB' || t.name === 'YKB' || t.name === 'ENPARA'))
+            );
+
             const mNames = [
                 "Ekim 2026", "Kasım 2026", "Aralık 2026", 
                 "Ocak 2027", "Şubat 2027", "Mart 2027", "Nisan 2027", "Mayıs 2027", "Haziran 2027", "Temmuz 2027", "Ağustos 2027", "Eylül 2027", "Ekim 2027", "Kasım 2027", "Aralık 2027"
             ];
+            
             const projRows = [
                 { name: "MAAŞ (7)", type: "Gelir", category: "Gelir", vals: [35000, 45000, 45000, 45000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000] },
                 { name: "MAAŞ (10)", type: "Gelir", category: "Gelir", vals: [45000, 45000, 45000, 45000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000] },
                 { name: "NEJAT", type: "Gelir", category: "Gelir", vals: [1200, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
-                { name: "KİRA", type: "Gider", category: "Gider", vals: [15000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 27000, 27000, 27000] },
-                { name: "FON", type: "Gider", category: "Fon Yatırımı", vals: [27000, 27000, 27000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000] },
+                { name: "KİRA", type: "Gider", category: "Gider", vals: [15000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 27000, 27000] },
+                { name: "FON", type: "Gider", category: "Fon Yatırımı", vals: [27000, 27000, 27000, 27000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000] },
                 { name: "TEB", type: "Gider", category: "Gider", vals: [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000] },
                 { name: "YKB", type: "Gider", category: "Gider", vals: [15000, 15000, 15000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000] },
                 { name: "ENPARA", type: "Gider", category: "Gider", vals: [20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000] }
@@ -256,10 +262,10 @@
                     }
                 });
             });
-            state.importedProjV71 = true;
+            state.importedProjV74 = true;
         }
 
-        // Firebase Firestore Otomatik Entegrasyonu (v71)
+        // Firebase Firestore Otomatik Entegrasyonu (v74)
         const firebaseConfig = {
             apiKey: "AIzaSyCLxx02KpBH2MFGXEePIb-w79FVwOBW4GQ",
             authDomain: "butce-24f0f.firebaseapp.com",
@@ -343,7 +349,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v71', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v74', JSON.stringify(state));
                             checkLock();
                             renderView();
                         } else {
@@ -375,7 +381,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v71', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v74', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -394,7 +400,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v71', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v74', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -519,41 +525,13 @@
             return year * 12 + mIndex;
         }
 
-        function getChronologicalMonths() {
-            let monthsSet = new Set(state.transactions.map(t => t.date));
-            monthsSet.add(getActiveMonthString());
-            let arr = Array.from(monthsSet);
-            arr.sort((a, b) => parseMonthYear(a) - parseMonthYear(b));
-            return arr;
-        }
-
+        // Excel tablosundaki gibi o aya ait aylık net KALAN (Gelir - Gider) hesabı
         function calculateMonthFinancials(targetMonthStr) {
-            let chronoMonths = getChronologicalMonths();
-            let targetIndex = chronoMonths.indexOf(targetMonthStr);
-            
-            let devredenBakiye = 0;
-            let buAyGelir = 0;
-            let buAyGider = 0;
-            
-            let runningBalance = 0;
-            for (let i = 0; i <= targetIndex; i++) {
-                let mStr = chronoMonths[i];
-                let mTx = state.transactions.filter(t => t.date === mStr);
-                let g = mTx.filter(t => t.type === 'Gelir').reduce((a, b) => a + b.amount, 0);
-                let d = mTx.filter(t => t.type === 'Gider').reduce((a, b) => a + b.amount, 0);
-                let mNet = g - d;
-                
-                if (i < targetIndex) {
-                    runningBalance += mNet;
-                } else {
-                    devredenBakiye = runningBalance;
-                    buAyGelir = g;
-                    buAyGider = d;
-                }
-            }
-            
-            let toplamBakiye = devredenBakiye + buAyGelir - buAyGider;
-            return { devredenBakiye, buAyGelir, buAyGider, toplamBakiye };
+            let mTx = state.transactions.filter(t => t.date === targetMonthStr);
+            let buAyGelir = mTx.filter(t => t.type === 'Gelir').reduce((a, b) => a + b.amount, 0);
+            let buAyGider = mTx.filter(t => t.type === 'Gider').reduce((a, b) => a + b.amount, 0);
+            let toplamBakiye = buAyGelir - buAyGider;
+            return { devredenBakiye: 0, buAyGelir, buAyGider, toplamBakiye };
         }
 
         function formatDateToMonthStr(dateStr) {
@@ -578,7 +556,6 @@
             let fin = calculateMonthFinancials(activeMonthStr);
             let gelirler = fin.buAyGelir;
             let giderler = fin.buAyGider;
-            let devredenBakiye = fin.devredenBakiye;
             let toplamBakiye = fin.toplamBakiye;
             
             let monthTx = state.transactions.filter(t => t.date === activeMonthStr);
@@ -610,12 +587,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="bg-gradient-to-br from-[#1c1c24] to-[#121217] bg-pattern p-5 sm:p-6 rounded-[28px] border border-zinc-800/80 shadow-xl space-y-3">
                                 <div class="flex justify-between items-center">
-                                    <span class="text-[10px] font-extrabold tracking-widest text-zinc-400 uppercase">NET KALAN (DEVİRLİ) · ${activeMonthStr.toUpperCase()}</span>
+                                    <span class="text-[10px] font-extrabold tracking-widest text-zinc-400 uppercase">AYLIK NET KALAN · ${activeMonthStr.toUpperCase()}</span>
                                 </div>
                                 <div class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight ${toplamBakiye < 0 ? 'text-red-400' : ''}">${toplamBakiye.toLocaleString('tr-TR', {maximumFractionDigits: 0})} ₺</div>
                                 
                                 <div class="space-y-1.5 pt-2 text-xs text-zinc-300 border-t border-zinc-800/60">
-                                    ${devredenBakiye !== 0 ? `<div class="flex justify-between"><span>Devreden Bakiye:</span><span class="${devredenBakiye < 0 ? 'text-red-400' : 'text-zinc-200'} font-bold">${devredenBakiye.toLocaleString('tr-TR', {maximumFractionDigits: 0})} ₺</span></div>` : ''}
                                     <div class="flex justify-between cursor-pointer hover:text-white" onclick="changeTab('income')"><span>Bu Ay Gelir:</span><span class="text-[#10b981] font-bold">+${gelirler.toLocaleString('tr-TR', {maximumFractionDigits: 0})} ₺</span></div>
                                     <div class="flex justify-between cursor-pointer hover:text-white" onclick="changeTab('expense')"><span>Bu Ay Gider:</span><span class="text-[#ef4444] font-bold">-${giderler.toLocaleString('tr-TR', {maximumFractionDigits: 0})} ₺</span></div>
                                 </div>
