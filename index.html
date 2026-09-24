@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v70</title>
+    <title>CepteBütçe - Tam Senkron v71</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
@@ -24,7 +24,7 @@
 <body class="flex justify-center items-center min-h-[100dvh] bg-[#0b0b0e] p-0 sm:p-4">
     
     <!-- Responsive Ana Konteyner -->
-    <div class="w-full h-[100dvh] sm:h-[90vh] sm:max-w-5xl bg-[#0f0f12] sm:rounded-[32px] sm:border sm:border-zinc-800 flex flex-col relative overflow-hidden shadow-2xl">
+    <div class="w-full h-[100dvh] sm:h-[90vh] sm:max-w-4xl bg-[#0f0f12] sm:rounded-[32px] sm:border sm:border-zinc-800 flex flex-col relative overflow-hidden shadow-2xl">
         
         <!-- Şifre Kilit Ekranı -->
         <div id="lock-screen" class="absolute inset-0 bg-[#0f0f12] z-50 flex flex-col justify-center items-center p-6 space-y-6 hidden">
@@ -62,30 +62,26 @@
         </div>
 
         <!-- Alt Navigasyon Barı -->
-        <div class="absolute bottom-0 left-0 right-0 bg-[#121216]/95 backdrop-blur-md border-t border-zinc-800/80 px-2 sm:px-4 py-2.5 flex justify-between items-center z-30 sm:rounded-b-[32px]">
+        <div class="absolute bottom-0 left-0 right-0 bg-[#121216]/95 backdrop-blur-md border-t border-zinc-800/80 px-4 py-2.5 flex justify-between items-center z-30 sm:rounded-b-[32px]">
             <button onclick="changeTab('home')" id="tab-home" class="flex flex-col items-center space-y-0.5 text-[#ccff00] transition flex-1">
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                <span class="text-[9px] sm:text-[10px] font-semibold">Ana Sayfa</span>
+                <span class="text-[10px] font-semibold">Ana Sayfa</span>
             </button>
             <button onclick="changeTab('income')" id="tab-income" class="flex flex-col items-center space-y-0.5 text-zinc-500 hover:text-zinc-300 transition flex-1">
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m0-16l-4 4m4-4l4 4"></path></svg>
-                <span class="text-[9px] sm:text-[10px] font-semibold">Gelirler</span>
+                <span class="text-[10px] font-semibold">Gelirler</span>
             </button>
             <button onclick="changeTab('expense')" id="tab-expense" class="flex flex-col items-center space-y-0.5 text-zinc-500 hover:text-zinc-300 transition flex-1">
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20V4m0 16l-4-4m4 4l4-4"></path></svg>
-                <span class="text-[9px] sm:text-[10px] font-semibold">Giderler</span>
+                <span class="text-[10px] font-semibold">Giderler</span>
             </button>
             <button onclick="changeTab('fund')" id="tab-fund" class="flex flex-col items-center space-y-0.5 text-zinc-500 hover:text-zinc-300 transition flex-1">
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                <span class="text-[9px] sm:text-[10px] font-medium">Fonlarım</span>
-            </button>
-            <button onclick="changeTab('projection')" id="tab-projection" class="flex flex-col items-center space-y-0.5 text-zinc-500 hover:text-zinc-300 transition flex-1">
-                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                <span class="text-[9px] sm:text-[10px] font-medium">Projeksiyon</span>
+                <span class="text-[10px] font-medium">Fonlarım</span>
             </button>
             <button onclick="changeTab('settings')" id="tab-settings" class="flex flex-col items-center space-y-0.5 text-zinc-500 hover:text-zinc-300 transition flex-1">
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756.2924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                <span class="text-[9px] sm:text-[10px] font-medium">Ayarlar</span>
+                <span class="text-[10px] font-medium">Ayarlar</span>
             </button>
         </div>
     </div>
@@ -177,7 +173,7 @@
     <script>
         // Tüm geçmiş versiyonları tarayarak verilerini eksiksiz kurtarıyoruz
         let savedData = null;
-        const allPossibleKeys = ['cep_butce_excel_v69', 'cep_butce_excel_v68', 'cep_butce_excel_v67', 'cep_butce_excel_v66', 'cep_butce_excel_v65', 'cep_butce_excel_v64', 'cep_butce_excel_v63', 'cep_butce_excel_v62'];
+        const allPossibleKeys = ['cep_butce_excel_v70', 'cep_butce_excel_v69', 'cep_butce_excel_v68', 'cep_butce_excel_v67', 'cep_butce_excel_v66', 'cep_butce_excel_v65', 'cep_butce_excel_v64', 'cep_butce_excel_v63'];
         
         for (let k of allPossibleKeys) {
             let data = localStorage.getItem(k);
@@ -229,7 +225,41 @@
 
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
-        // Firebase Firestore Otomatik Entegrasyonu (v70)
+        // Otomatik Projeksiyon Verilerini Ay Ay Gelir/Gider Olarak Entegre Etme (v71)
+        if(!state.importedProjV71) {
+            const mNames = [
+                "Ekim 2026", "Kasım 2026", "Aralık 2026", 
+                "Ocak 2027", "Şubat 2027", "Mart 2027", "Nisan 2027", "Mayıs 2027", "Haziran 2027", "Temmuz 2027", "Ağustos 2027", "Eylül 2027", "Ekim 2027", "Kasım 2027", "Aralık 2027"
+            ];
+            const projRows = [
+                { name: "MAAŞ (7)", type: "Gelir", category: "Gelir", vals: [35000, 45000, 45000, 45000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000] },
+                { name: "MAAŞ (10)", type: "Gelir", category: "Gelir", vals: [45000, 45000, 45000, 45000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000] },
+                { name: "NEJAT", type: "Gelir", category: "Gelir", vals: [1200, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] },
+                { name: "KİRA", type: "Gider", category: "Gider", vals: [15000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 27000, 27000, 27000] },
+                { name: "FON", type: "Gider", category: "Fon Yatırımı", vals: [27000, 27000, 27000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000, 40000] },
+                { name: "TEB", type: "Gider", category: "Gider", vals: [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000] },
+                { name: "YKB", type: "Gider", category: "Gider", vals: [15000, 15000, 15000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000] },
+                { name: "ENPARA", type: "Gider", category: "Gider", vals: [20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000, 20000] }
+            ];
+
+            projRows.forEach(item => {
+                item.vals.forEach((amt, idx) => {
+                    if (amt > 0) {
+                        state.transactions.push({
+                            id: Date.now() + Math.random() * 10000,
+                            name: item.name,
+                            amount: amt,
+                            type: item.type,
+                            category: item.category,
+                            date: mNames[idx]
+                        });
+                    }
+                });
+            });
+            state.importedProjV71 = true;
+        }
+
+        // Firebase Firestore Otomatik Entegrasyonu (v71)
         const firebaseConfig = {
             apiKey: "AIzaSyCLxx02KpBH2MFGXEePIb-w79FVwOBW4GQ",
             authDomain: "butce-24f0f.firebaseapp.com",
@@ -313,7 +343,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v70', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v71', JSON.stringify(state));
                             checkLock();
                             renderView();
                         } else {
@@ -345,7 +375,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v70', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v71', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -364,7 +394,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v70', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v71', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -380,7 +410,7 @@
         }
 
         let currentTab = 'home';
-        const tabOrder = ['home', 'income', 'expense', 'fund', 'projection', 'settings'];
+        const tabOrder = ['home', 'income', 'expense', 'fund', 'settings'];
         let editingTxId = null;
         let editingHistoryId = null;
         let modalSelectedMonth = null;
@@ -473,7 +503,6 @@
                     if(t === 'income') el.className = "flex flex-col items-center space-y-0.5 text-[#10b981] transition flex-1";
                     else if(t === 'expense') el.className = "flex flex-col items-center space-y-0.5 text-[#ef4444] transition flex-1";
                     else if(t === 'fund') el.className = "flex flex-col items-center space-y-0.5 text-[#8b5cf6] transition flex-1";
-                    else if(t === 'projection') el.className = "flex flex-col items-center space-y-0.5 text-[#3b82f6] transition flex-1";
                     else el.className = "flex flex-col items-center space-y-0.5 text-[#ccff00] transition flex-1";
                 } else {
                     el.className = "flex flex-col items-center space-y-0.5 text-zinc-500 hover:text-zinc-300 transition flex-1";
@@ -564,17 +593,13 @@
 
             let basePrincipal = state.funds.principal !== undefined ? state.funds.principal : 761167;
             let principal = basePrincipal + totalInvested - totalWithdrawn;
-            let fonTotal = latestBalance - totalWithdrawn; // Güncel bakiye eksi çekilenler
+            let fonTotal = latestBalance;
 
-            // GÜNLÜK KÂR DÜZELTMESİ (v70): En az 2 kayıt varsa son iki kayıt arasındaki fark, tek kayıt varsa 0 veya baz anapara değişimi
             let gunlukKar = 0;
             if (historyList.length >= 2) {
                 let latest = historyList[historyList.length - 1];
                 let prev = historyList[historyList.length - 2];
                 gunlukKar = latest.balance - prev.balance;
-            } else if (historyList.length === 1 && historyList[0].balance !== principal) {
-                // Eğer tek bakiye kaydı varsa ve ilk kurulum değilse günlük değişim olarak ele alınabilir
-                gunlukKar = 0; 
             }
 
             let toplamKar = fonTotal - principal;
@@ -785,60 +810,6 @@
                                         }
                                     }).join('')}
                             </div>
-                        </div>
-                    </div>
-                `;
-            } else if (currentTab === 'projection') {
-                const projMonths = [
-                    "EKİM", "KASIM", "ARALIK", "OCAK", "ŞUBAT", "MART", "NİSAN", "MAYIS", "HAZİRAN", "TEMMUZ", "AĞUSTOS", "EYLÜL", "EKİM", "KASIM", "ARALIK"
-                ];
-                const projYears = [
-                    "2026", "2026", "2026", "2027", "2027", "2027", "2027", "2027", "2027", "2027", "2027", "2027", "2027", "2027", "2027"
-                ];
-                const rowsData = [
-                    { name: "MAAŞ", date: "7", vals: [35000, 45000, 45000, 45000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000, 55000], isPos: true },
-                    { name: "MAAŞ", date: "10", vals: [45000, 45000, 45000, 45000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000, 54000], isPos: true },
-                    { name: "NEJAT", date: "10", vals: [1200, 1000, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], isYellow: true },
-                    { name: "KİRA", date: "10", vals: [-15000, -20000, -20000, -20000, -20000, -20000, -20000, -20000, -20000, -20000, -20000, -20000, -27000, -27000, -27000], isNeg: true },
-                    { name: "FON", date: "", vals: [-27000, -27000, -27000, -27000, -40000, -40000, -40000, -40000, -40000, -40000, -40000, -40000, -40000, -40000, -40000], isNeg: true },
-                    { name: "TEB", date: "17", vals: [-10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000], isNeg: true },
-                    { name: "YKB", date: "18", vals: [-15000, -15000, -15000, -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000, -10000], isNeg: true },
-                    { name: "ENPARA", date: "20", vals: [-20000, -20000, -20000, -20000, -20000, -20000, -20000, -20000, -20000, -20000, -20000, -20000, -20000, -20000, -20000], isNeg: true },
-                    { name: "KALAN", date: "", vals: [5800, 1000, 2000, 2000, 4000, 9000, 9000, 9000, 9000, 9000, 9000, 9000, 9000, 2000, 2000], isKalan: true }
-                ];
-
-                container.innerHTML = `
-                    <div class="space-y-4 max-w-full mx-auto pb-6">
-                        <div class="flex justify-between items-center">
-                            <h2 class="text-base sm:text-lg font-bold text-white">Finansal Projeksiyon Tablosu (2026-2027)</h2>
-                            <span class="text-xs text-zinc-400 bg-zinc-800 px-3 py-1 rounded-xl">Yatay Kaydırılabilir</span>
-                        </div>
-                        <div class="overflow-x-auto no-scrollbar border border-zinc-800 rounded-2xl bg-[#121215]">
-                            <table class="w-full text-left text-xs border-collapse min-w-[900px]">
-                                <thead>
-                                    <tr class="border-b border-zinc-800 bg-[#18181c]">
-                                        <th class="p-2.5 font-bold text-zinc-300 border-r border-zinc-800 text-center sticky left-0 bg-[#18181c] z-10">KALEM</th>
-                                        <th class="p-2.5 font-bold text-zinc-300 border-r border-zinc-800 text-center">TARİH</th>
-                                        ${projMonths.map((m, idx) => `<th class="p-2.5 font-bold text-center border-r border-zinc-800/60 min-w-[85px]">${m} <span class="text-[9px] text-zinc-500 block">${projYears[idx]}</span></th>`).join('')}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${rowsData.map(r => `
-                                        <tr class="border-b border-zinc-800/60 hover:bg-zinc-800/30 ${r.isKalan ? 'bg-zinc-900/80 font-extrabold' : ''}">
-                                            <td class="p-2.5 border-r border-zinc-800 font-bold text-white sticky left-0 bg-[#121215] z-10">${r.name}</td>
-                                            <td class="p-2.5 border-r border-zinc-800 text-center text-zinc-400">${r.date}</td>${r.vals.map((v, i) => {
-                                                let cellClass = "text-zinc-200";
-                                                if(r.isYellow && v === 0) cellClass = "bg-yellow-500/20 text-yellow-300 font-bold text-center";
-                                                else if(r.isKalan) cellClass = v < 0 ? "text-red-400 text-center" : "text-emerald-400 text-center";
-                                                else if(v < 0) cellClass = "text-red-400 text-center";
-                                                else if(v > 0) cellClass = "text-emerald-400 text-center";
-                                                else cellClass = "text-zinc-500 text-center";
-                                                return `<td class="p-2.5 border-r border-zinc-800/55 text-right font-mono ${cellClass}">${v !== 0 ? v.toLocaleString('tr-TR', {maximumFractionDigits: 0}) + ' ₺' : '0 ₺'}</td>`;
-                                            }).join('')}
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
                         </div>
                     </div>
                 `;
