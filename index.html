@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v48</title>
+    <title>CepteBütçe - Tam Senkron v49</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
@@ -105,8 +105,7 @@
                 <div>
                     <label class="text-[11px] text-zinc-400 font-semibold mb-1 block">Kategori / Tür</label>
                     <select id="m-cat" class="w-full bg-[#121215] border border-zinc-800 rounded-2xl p-3 text-white text-xs outline-none focus:border-[#ccff00]">
-                        <option value="Gelir">Gelir / Maaş</option>
-                        <option value="Gider">Kredi Kartı / Gider / Kira</option>
+                        <!-- Dinamik doldurulacak -->
                     </select>
                 </div>
                 <button onclick="saveModalData()" class="w-full bg-[#ccff00] hover:bg-[#b3e600] text-black font-bold py-3.5 rounded-2xl text-xs transition shadow-lg shadow-[#ccff00]/10">Kaydet</button>
@@ -183,7 +182,7 @@
         ];
 
         let savedData = null;
-        const keysToCheck = ['cep_butce_excel_v48', 'cep_butce_excel_v47', 'cep_butce_excel_v46', 'cep_butce_excel_v45', 'cep_butce_excel_v44'];
+        const keysToCheck = ['cep_butce_excel_v49', 'cep_butce_excel_v48', 'cep_butce_excel_v47', 'cep_butce_excel_v46', 'cep_butce_excel_v45'];
         for (let k of keysToCheck) {
             let data = localStorage.getItem(k);
             if (data) {
@@ -220,7 +219,7 @@
 
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
-        // Firebase Firestore Otomatik Entegrasyonu (v48)
+        // Firebase Firestore Otomatik Entegrasyonu (v49)
         const firebaseConfig = {
             apiKey: "AIzaSyCLxx02KpBH2MFGXEePIb-w79FVwOBW4GQ",
             authDomain: "butce-24f0f.firebaseapp.com",
@@ -305,7 +304,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v48', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v49', JSON.stringify(state));
                             checkLock();
                             renderView();
                         }
@@ -336,7 +335,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v48', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v49', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -355,7 +354,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v48', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v49', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -501,7 +500,7 @@
                 let mStr = chronoMonths[i];
                 let mTx = state.transactions.filter(t => t.date === mStr);
                 let g = mTx.filter(t => t.type === 'Gelir').reduce((a, b) => a + b.amount, 0);
-                let d = mTx.filter(t => t.type === 'Gider').reduce((a, b) => a + b.amount, 0);
+                let d = mTx.filter(t => t.type === 'Gider' || t.category === 'Fon Yatırımı').reduce((a, b) => a + b.amount, 0);
                 let mNet = g - d;
                 
                 if (i < targetIndex) {
@@ -637,7 +636,7 @@
                     </div>
                 `;
             } else if (currentTab === 'expense') {
-                let giderList = monthTx.filter(t => t.type === 'Gider');
+                let giderList = monthTx.filter(t => t.type === 'Gider' || t.category === 'Fon Yatırımı');
                 container.innerHTML = `
                     <div class="space-y-4 max-w-4xl mx-auto">
                         <div class="flex justify-between items-center">
@@ -674,14 +673,31 @@
                     return {
                         id: 'hist_' + h.id,
                         realId: h.id,
+                        isTx: false,
                         date: h.date,
                         monthStr: mStr,
                         sortDate: new Date(h.date).getTime() || 0,
+                        title: 'Bakiye Güncellemesi',
                         balance: h.balance
                     };
                 });
 
-                let combinedHistory = historyItems
+                let fundTxItems = (state.transactions || [])
+                    .filter(t => t.category === 'Fon Yatırımı' || t.category === 'Fondan Çek')
+                    .map(t => ({
+                        id: 'tx_' + t.id,
+                        realId: t.id,
+                        isTx: true,
+                        date: t.date,
+                        monthStr: t.date,
+                        sortDate: parseMonthYear(t.date) * 86400000,
+                        title: t.name || (t.category === 'Fon Yatırımı' ? 'Fon Yatırımı' : 'Fondan Çek'),
+                        category: t.category,
+                        amount: t.amount,
+                        type: t.type
+                    }));
+
+                let combinedHistory = [...historyItems, ...fundTxItems]
                     .filter(item => item.monthStr === activeMonthStr)
                     .sort((a, b) => b.sortDate - a.sortDate);
 
@@ -719,18 +735,36 @@
                             </div>
                             <div class="space-y-2">
                                 ${combinedHistory.length === 0 ? `<p class="text-zinc-500 text-xs text-center py-6">${activeMonthStr} için kayıtlı fon hareketi bulunmuyor.</p>` :
-                                    combinedHistory.map(item => `
-                                        <div class="bg-[#18181c] border border-zinc-800/80 p-4 rounded-2xl flex justify-between items-center">
-                                            <div>
-                                                <div class="text-xs font-bold text-white">${item.date} · <span class="text-purple-400">📊 Bakiye Güncellemesi</span></div>
-                                                <div class="text-[11px] text-zinc-400 mt-0.5">Güncel Bakiye: <span class="text-purple-300 font-semibold">${item.balance.toLocaleString('tr-TR', {maximumFractionDigits: 0})} ₺</span></div>
-                                            </div>
-                                            <div class="flex items-center space-x-2">
-                                                <button onclick="openEditFundHistory(${item.realId})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1.5 rounded-xl text-xs font-semibold">Düzenle</button>
-                                                <button onclick="deleteFundHistory(${item.realId})" class="w-7 h-7 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-xs font-bold">✕</button>
-                                            </div>
-                                        </div>
-                                    `).join('')}
+                                    combinedHistory.map(item => {
+                                        if(item.isTx) {
+                                            let isInvestment = item.category === 'Fon Yatırımı';
+                                            return `
+                                                <div class="bg-[#18181c] border border-zinc-800/80 p-4 rounded-2xl flex justify-between items-center">
+                                                    <div>
+                                                        <div class="text-xs font-bold text-white">${item.date} · <span class="${isInvestment ? 'text-emerald-400' : 'text-amber-400'}">${isInvestment ? '🟢 Fon Yatırımı' : '🟠 Fondan Çek'}</span></div>
+                                                        <div class="text-[11px] text-zinc-400 mt-0.5">${item.title}: <span class="font-semibold text-white">${item.amount.toLocaleString('tr-TR', {maximumFractionDigits: 0})} ₺</span></div>
+                                                    </div>
+                                                    <div class="flex items-center space-x-2">
+                                                        <button onclick="openEditModal(${item.realId})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1.5 rounded-xl text-xs font-semibold">Düzenle</button>
+                                                        <button onclick="deleteTx(${item.realId})" class="w-7 h-7 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-xs font-bold">✕</button>
+                                                    </div>
+                                                </div>
+                                            `;
+                                        } else {
+                                            return `
+                                                <div class="bg-[#18181c] border border-zinc-800/80 p-4 rounded-2xl flex justify-between items-center">
+                                                    <div>
+                                                        <div class="text-xs font-bold text-white">${item.date} · <span class="text-purple-400">📊 Bakiye Güncellemesi</span></div>
+                                                        <div class="text-[11px] text-zinc-400 mt-0.5">Güncel Bakiye: <span class="text-purple-300 font-semibold">${item.balance.toLocaleString('tr-TR', {maximumFractionDigits: 0})} ₺</span></div>
+                                                    </div>
+                                                    <div class="flex items-center space-x-2">
+                                                        <button onclick="openEditFundHistory(${item.realId})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1.5 rounded-xl text-xs font-semibold">Düzenle</button>
+                                                        <button onclick="deleteFundHistory(${item.realId})" class="w-7 h-7 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-xs font-bold">✕</button>
+                                                    </div>
+                                                </div>
+                                            `;
+                                        }
+                                    }).join('')}
                             </div>
                         </div>
                     </div>
@@ -846,9 +880,15 @@
 
             let catSelect = document.getElementById('m-cat');
             if(type === 'Gelir') {
-                catSelect.innerHTML = `<option value="Gelir">Gelir / Maaş</option>`;
+                catSelect.innerHTML = `
+                    <option value="Gelir">Gelir / Maaş</option>
+                    <option value="Fondan Çek">Fondan Çek</option>
+                `;
             } else {
-                catSelect.innerHTML = `<option value="Gider">Kredi Kartı / Gider / Kira</option>`;
+                catSelect.innerHTML = `
+                    <option value="Gider">Kredi Kartı / Gider / Kira</option>
+                    <option value="Fon Yatırımı">Fon Yatırımı</option>
+                `;
             }
 
             document.getElementById('modal').style.display = 'flex';
@@ -865,9 +905,15 @@
 
             let catSelect = document.getElementById('m-cat');
             if(tx.type === 'Gelir') {
-                catSelect.innerHTML = `<option value="Gelir" ${tx.category === 'Gelir' ? 'selected' : ''}>Gelir / Maaş</option>`;
+                catSelect.innerHTML = `
+                    <option value="Gelir" ${tx.category === 'Gelir' ? 'selected' : ''}>Gelir / Maaş</option>
+                    <option value="Fondan Çek" ${tx.category === 'Fondan Çek' ? 'selected' : ''}>Fondan Çek</option>
+                `;
             } else {
-                catSelect.innerHTML = `<option value="Gider" ${tx.category === 'Gider' ? 'selected' : ''}>Kredi Kartı / Gider / Kira</option>`;
+                catSelect.innerHTML = `
+                    <option value="Gider" ${tx.category === 'Gider' ? 'selected' : ''}>Kredi Kartı / Gider / Kira</option>
+                    <option value="Fon Yatırımı" ${tx.category === 'Fon Yatırımı' ? 'selected' : ''}>Fon Yatırımı</option>
+                `;
             }
 
             document.getElementById('modal').style.display = 'flex';
@@ -1011,7 +1057,7 @@
 
         function resetData() {
             if(confirm("Tüm tablo verileri sıfırlansın mı?")) {
-                localStorage.removeItem('cep_butce_excel_v48');
+                localStorage.removeItem('cep_butce_excel_v49');
                 location.reload();
             }
         }
