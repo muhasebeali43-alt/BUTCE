@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v80</title>
+    <title>CepteBütçe - Tam Senkron v81</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
@@ -173,10 +173,27 @@
         </div>
     </div>
 
+    <!-- YENİ: Raporlar Modal -->
+    <div id="report-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center z-50 p-4">
+        <div class="bg-[#18181c] w-full max-w-lg h-[600px] rounded-3xl border border-zinc-800 p-5 flex flex-col space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-zinc-800/80 pb-3">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">📊</div>
+                    <h3 class="text-base font-bold text-white">Aylık Özet Raporlar</h3>
+                </div>
+                <button onclick="closeReportModal()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white text-xs transition">✕</button>
+            </div>
+            <div class="px-1 text-[11px] text-zinc-400 font-medium">Geçmişten bugüne tüm ayların net ve kümülatif (kasa) durumu.</div>
+            <div id="report-list" class="flex-1 overflow-y-auto no-scrollbar space-y-3 pb-2">
+                <!-- Raporlar buraya gelecek -->
+            </div>
+        </div>
+    </div>
+
     <script>
         // Tüm geçmiş versiyonları tarayarak verilerini eksiksiz kurtarıyoruz
         let savedData = null;
-        const allPossibleKeys = ['cep_butce_excel_v80', 'cep_butce_excel_v79', 'cep_butce_excel_v78', 'cep_butce_excel_v77', 'cep_butce_excel_v76', 'cep_butce_excel_v75', 'cep_butce_excel_v74', 'cep_butce_excel_v73'];
+        const allPossibleKeys = ['cep_butce_excel_v81', 'cep_butce_excel_v80', 'cep_butce_excel_v79', 'cep_butce_excel_v78', 'cep_butce_excel_v77', 'cep_butce_excel_v76', 'cep_butce_excel_v75', 'cep_butce_excel_v74'];
         
         for (let k of allPossibleKeys) {
             let data = localStorage.getItem(k);
@@ -312,7 +329,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v80', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v81', JSON.stringify(state));
                             checkLock();
                             renderView();
                         } else {
@@ -344,7 +361,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v80', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v81', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -363,7 +380,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v80', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v81', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -388,7 +405,7 @@
         const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
         const days = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
         
-        // OTOMATİK AY ALGILAMA SİSTEMİ (Gerçek zamanlı saati okur)
+        // OTOMATİK AY ALGILAMA SİSTEMİ
         const currentSystemDate = new Date();
         let activeMonthIndex = currentSystemDate.getMonth();
         let activeYear = currentSystemDate.getFullYear();
@@ -619,7 +636,6 @@
             let toplamKar = fonTotal - principal;
 
             if (currentTab === 'home') {
-                // Ana sayfa Gelir / Gider Listeleri
                 let gelirList = monthTx.filter(t => t.type === 'Gelir' || t.category === 'Fondan Çek');
                 let giderList = monthTx.filter(t => t.type === 'Gider' || t.category === 'Fon Yatırımı');
 
@@ -812,7 +828,6 @@
                         amount: t.amount
                     }));
 
-                // FİLTRE KALDIRILDI: Artık tüm geçmiş tek ekranda kronolojik görünecek.
                 let combinedHistory = [...historyItems, ...fundTxItems]
                     .sort((a, b) => {
                         if (b.sortDate !== a.sortDate) return b.sortDate - a.sortDate;
@@ -846,7 +861,6 @@
                             <span>📝 Fon Bakiyesini Güncelle</span>
                         </button>
 
-                        <!-- Tüm Ayları Kapsayan Fon Hareketleri Bölümü -->
                         <div class="space-y-3 pt-2">
                             <div class="flex justify-between items-center">
                                 <h3 class="text-xs font-extrabold text-zinc-400 tracking-wider uppercase">Tüm Fon Hareketleri & Geçmiş</h3>
@@ -913,6 +927,12 @@
                             </div>
                             ` : ''}
 
+                            <!-- YENİ: RAPORLAR BUTONU BURAYA EKLENDİ -->
+                            <div class="flex justify-between items-center py-2 border-b border-zinc-800">
+                                <span class="text-sm font-medium text-white">Aylık Özet Raporlar (Tüm Yıl)</span>
+                                <button onclick="openReportModal()" class="bg-blue-500/10 text-blue-400 text-xs font-bold px-4 py-2.5 rounded-xl">Raporu Aç</button>
+                            </div>
+
                             <div class="flex justify-between items-center py-2 border-b border-zinc-800">
                                 <span class="text-sm font-medium text-white">Dönem Hareketleri (Tüm Aylar)</span>
                                 <button onclick="openLogModal()" class="bg-purple-500/10 text-purple-400 text-xs font-bold px-4 py-2.5 rounded-xl">Yönet / Gör</button>
@@ -948,6 +968,48 @@
                 checkLock();
             }
         }
+
+        // --- YENİ EKLENEN RAPOR FONKSİYONLARI ---
+        function openReportModal() {
+            let chronoMonths = getChronologicalMonths();
+            let listEl = document.getElementById('report-list');
+            let html = '';
+
+            let runningBalance = 0;
+            chronoMonths.forEach(mStr => {
+                let mTx = state.transactions.filter(t => t.date === mStr);
+                let g = mTx.filter(t => t.type === 'Gelir').reduce((a, b) => a + b.amount, 0);
+                let d = mTx.filter(t => t.type === 'Gider').reduce((a, b) => a + b.amount, 0);
+                let mNet = g - d;
+                runningBalance += mNet; // Kümülatif Kasa Devri (Sistemi bozmadan salt okunur toplama)
+
+                html += `
+                    <div class="bg-[#121215] border border-zinc-800/80 p-4 rounded-2xl flex flex-col space-y-2.5 relative overflow-hidden group">
+                        <div class="flex justify-between items-center border-b border-zinc-800/50 pb-2.5">
+                            <span class="text-sm font-bold text-white">${mStr}</span>
+                            <span class="text-[11px] px-2 py-1 rounded-lg ${runningBalance >= 0 ? 'bg-[#ccff00]/10 text-[#ccff00]' : 'bg-red-500/10 text-red-400'} font-bold">Kasa: ${runningBalance.toLocaleString('tr-TR')} ₺</span>
+                        </div>
+                        <div class="flex justify-between text-xs items-center">
+                            <span class="text-zinc-400">Gelir: <span class="text-[#10b981] font-semibold">+${g.toLocaleString('tr-TR')} ₺</span></span>
+                            <span class="text-zinc-400">Gider: <span class="text-[#ef4444] font-semibold">-${d.toLocaleString('tr-TR')} ₺</span></span>
+                            <span class="text-zinc-400">Ay Sonu Net: <span class="text-white font-semibold">${(mNet > 0 ? '+' : '')}${mNet.toLocaleString('tr-TR')} ₺</span></span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (chronoMonths.length === 0) {
+                html = '<p class="text-zinc-500 text-xs text-center py-6">Henüz raporlanacak kayıt bulunmuyor.</p>';
+            }
+
+            listEl.innerHTML = html;
+            document.getElementById('report-modal').style.display = 'flex';
+        }
+
+        function closeReportModal() {
+            document.getElementById('report-modal').style.display = 'none';
+        }
+        // ----------------------------------------
 
         function openLogModal() {
             let activeMonthStr = getActiveMonthString();
