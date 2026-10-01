@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v82</title>
+    <title>CepteBütçe - Tam Senkron v83</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
@@ -19,6 +19,9 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .bg-pattern { background-image: radial-gradient(rgba(204, 255, 0, 0.08) 1px, transparent 1px); background-size: 20px 20px; }
         .bg-fund-pattern { background-image: radial-gradient(rgba(139, 92, 246, 0.15) 1px, transparent 1px); background-size: 20px 20px; }
+        
+        /* Tablo Sabitleme Gölgeleri */
+        .sticky-col { position: sticky; left: 0; z-index: 10; box-shadow: 2px 0 5px rgba(0,0,0,0.4); }
     </style>
 </head>
 <body class="flex justify-center items-center min-h-[100dvh] bg-[#0b0b0e] p-0 sm:p-4">
@@ -173,27 +176,29 @@
         </div>
     </div>
 
-    <!-- YENİ: Akıllı Raporlar Modal (Yatay Kart & Analiz) -->
-    <div id="report-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center z-50 p-4">
-        <div class="bg-[#18181c] w-full max-w-xl max-h-[80vh] rounded-3xl border border-zinc-800 p-5 flex flex-col shadow-2xl">
-            <div class="flex justify-between items-center border-b border-zinc-800/80 pb-4 mb-4">
-                <div class="flex items-center space-x-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg">📈</div>
-                    <h3 class="text-base font-bold text-white">Finansal Özet & Analiz</h3>
+    <!-- YENİ: Excel Tarzı Geniş Raporlar Tablosu -->
+    <div id="report-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden justify-center items-center z-50 p-2 sm:p-4">
+        <div class="bg-[#121215] w-full max-w-[98%] sm:max-w-6xl h-[85vh] rounded-[28px] border border-zinc-800 flex flex-col shadow-2xl overflow-hidden">
+            <div class="flex justify-between items-center border-b border-zinc-800/80 p-4 bg-[#18181c] shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl">📊</div>
+                    <div>
+                        <h3 class="text-sm sm:text-base font-extrabold text-white">Finansal Raporlar & Excel Görünümü</h3>
+                        <p class="text-[10px] text-zinc-400 font-medium">Eylül 2026 hariç, güncel tüm aylar ve kasa takibi</p>
+                    </div>
                 </div>
                 <button onclick="closeReportModal()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white text-xs transition">✕</button>
             </div>
             
-            <div id="report-list" class="flex flex-col flex-1 overflow-y-auto no-scrollbar">
-                <!-- AI Analiz ve Yatay Rapor Kartları Buraya Gelecek -->
+            <div id="report-list" class="flex flex-col flex-1 overflow-y-auto no-scrollbar p-3 sm:p-5 space-y-4">
+                <!-- AI Analiz ve Excel Tablosu Buraya Gelecek -->
             </div>
         </div>
     </div>
 
     <script>
-        // Tüm geçmiş versiyonları tarayarak verilerini eksiksiz kurtarıyoruz
         let savedData = null;
-        const allPossibleKeys = ['cep_butce_excel_v82', 'cep_butce_excel_v81', 'cep_butce_excel_v80', 'cep_butce_excel_v79', 'cep_butce_excel_v78', 'cep_butce_excel_v77', 'cep_butce_excel_v76', 'cep_butce_excel_v75', 'cep_butce_excel_v74'];
+        const allPossibleKeys = ['cep_butce_excel_v83', 'cep_butce_excel_v82', 'cep_butce_excel_v81', 'cep_butce_excel_v80', 'cep_butce_excel_v79', 'cep_butce_excel_v78', 'cep_butce_excel_v77', 'cep_butce_excel_v76'];
         
         for (let k of allPossibleKeys) {
             let data = localStorage.getItem(k);
@@ -258,7 +263,7 @@
         let db = null;
         let isSyncingFromCloud = false;
         let inactivityTimer = null;
-        const INACTIVITY_TIME = 3 * 60 * 1000; // 3 Dakika
+        const INACTIVITY_TIME = 3 * 60 * 1000;
 
         function resetInactivityTimer() {
             if (!state.pin || !sessionStorage.getItem('cep_unlocked')) return;
@@ -329,7 +334,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v82', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v83', JSON.stringify(state));
                             checkLock();
                             renderView();
                         } else {
@@ -361,7 +366,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v82', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v83', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -380,7 +385,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v82', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v83', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -922,8 +927,8 @@
                             ` : ''}
 
                             <div class="flex justify-between items-center py-2 border-b border-zinc-800">
-                                <span class="text-sm font-medium text-white">Finansal Özet & Analiz (Yeni)</span>
-                                <button onclick="openReportModal()" class="bg-blue-500/10 text-blue-400 text-xs font-bold px-4 py-2.5 rounded-xl">Raporu Aç</button>
+                                <span class="text-sm font-medium text-white">Finansal Raporlar & Excel Tablosu</span>
+                                <button onclick="openReportModal()" class="bg-blue-500/10 text-blue-400 text-xs font-bold px-4 py-2.5 rounded-xl shadow-[0_0_15px_rgba(59,130,246,0.2)]">Tabloyu Aç</button>
                             </div>
 
                             <div class="flex justify-between items-center py-2 border-b border-zinc-800">
@@ -962,9 +967,11 @@
             }
         }
 
-        // --- YENİ EKLENEN YATAY KART & ANALİZ FONKSİYONLARI ---
+        // --- YENİ EKLENEN EXCEL TİPİ TABLO & ANALİZ FONKSİYONLARI ---
         function openReportModal() {
             let chronoMonths = getChronologicalMonths();
+            // Eylül 2026'yı hariç tutarak sadece geçerli ayları (Ekim ve sonrası) listele
+            let displayMonths = chronoMonths.filter(m => m !== 'Eylül 2026');
             let listEl = document.getElementById('report-list');
             
             // Fon Kâr & Ortalama Hesaplaması
@@ -990,38 +997,95 @@
             let fonTotal = currentBal;
             let toplamKar = fonTotal - principal;
             
-            let aySayisi = chronoMonths.length > 0 ? chronoMonths.length : 1;
+            // Ortalama için sadece aktif ayları (Ekim ve sonrası) say.
+            let aySayisi = displayMonths.length > 0 ? displayMonths.length : 1;
             let aylikOrtalamaGetiri = Math.round(toplamKar / aySayisi);
             
-            // AI Yönlendirme Metni
             let yonlendirmeMetni = "";
             if(aylikOrtalamaGetiri > 0) {
-                yonlendirmeMetni = `Fondan elde ettiğin toplam kâr <b>${toplamKar.toLocaleString('tr-TR')} ₺</b> seviyesinde. Bu, fonların sana sistemde olduğun süre boyunca ortalama aylık <b>+${aylikOrtalamaGetiri.toLocaleString('tr-TR')} ₺</b> pasif gelir ürettiği anlamına gelir. Bu tutarı maaş dışı sabit giderlerini rahatlatmak için kullanabilir veya bileşik getiri gücünü artırmak için fona geri ekleyebilirsin.`;
+                yonlendirmeMetni = `Fondan elde ettiğin toplam kâr <b>${toplamKar.toLocaleString('tr-TR')} ₺</b>. Eksik girilen ilk ay (Eylül) hesaptan çıkarıldığında fonların sana aktif aylarda ortalama <b>+${aylikOrtalamaGetiri.toLocaleString('tr-TR')} ₺</b> (hedeflediğin banda uygun) getiri sağladığı görülüyor. Bu başarılı pasif geliri sabit giderlerini hafifletmek veya anaparaya ekleyerek büyütmek için kullanabilirsin.`;
             } else if (aylikOrtalamaGetiri < 0) {
-                yonlendirmeMetni = `Fon tarafında şu an <b>${toplamKar.toLocaleString('tr-TR')} ₺</b> eksidesin ve aylık ortalama <b>${aylikOrtalamaGetiri.toLocaleString('tr-TR')} ₺</b> düşüş yansımış. Piyasa dalgalanmalarını sakince takip edip zararı sabitlemeden anaparanı korumaya odaklanmanda fayda var.`;
+                yonlendirmeMetni = `Fon tarafında şu an <b>${toplamKar.toLocaleString('tr-TR')} ₺</b> eksidesin (Eylül hariç ortalama <b>${aylikOrtalamaGetiri.toLocaleString('tr-TR')} ₺</b> düşüş). Piyasayı izleyip aceleci davranmamanı tavsiye ederim.`;
             } else {
-                yonlendirmeMetni = `Henüz fon tarafında net bir kâr/zarar eğilimi oluşmamış. Düzenli yatırımlara devam ederek portföyünün yönünü belirleyebilirsin.`;
+                yonlendirmeMetni = `Henüz fon tarafında net bir kâr/zarar oluşmamış. Düzenli yatırımlara devam ederek büyüme başlatabilirsin.`;
             }
 
             let html = `
                 <!-- AI Panel -->
-                <div class="bg-gradient-to-br from-indigo-900/40 to-purple-900/20 border border-indigo-500/30 rounded-2xl p-4 mb-5 shrink-0">
-                    <div class="flex items-center space-x-2 mb-2.5">
+                <div class="bg-gradient-to-br from-indigo-900/40 to-purple-900/20 border border-indigo-500/30 rounded-2xl p-4 shrink-0">
+                    <div class="flex items-center space-x-2 mb-2">
                         <span class="text-indigo-400 text-lg">💡</span>
-                        <h4 class="text-xs font-extrabold text-indigo-300 uppercase tracking-widest">CepteBütçe Fon Analizi</h4>
+                        <h4 class="text-xs font-extrabold text-indigo-300 uppercase tracking-widest">CepteBütçe Akıllı Fon Analizi</h4>
                     </div>
                     <p class="text-[12px] leading-relaxed text-zinc-300">${yonlendirmeMetni}</p>
                 </div>
-                
-                <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3 px-1 shrink-0">Geçmiş Dönem Kartları</h4>
-                <!-- Yatay Kart Konteyneri -->
-                <div class="flex flex-row space-x-4 overflow-x-auto no-scrollbar snap-x pb-4 shrink-0">
             `;
 
-            let runningBalance = 0;
-            if (chronoMonths.length === 0) {
-                html += '<p class="text-zinc-500 text-xs w-full text-center py-6">Henüz raporlanacak kayıt bulunmuyor.</p>';
+            if (displayMonths.length === 0) {
+                html += '<p class="text-zinc-500 text-xs w-full text-center py-6 mt-4">Henüz Ekim 2026 ve sonrası için raporlanacak kayıt bulunmuyor.</p>';
             } else {
+                // Sütunlar: Aylar, Satırlar: Gelir/Gider İsimleri
+                let gelirNames = [...new Set(state.transactions.filter(t => t.type === 'Gelir' || t.category === 'Fondan Çek').map(t => t.name))];
+                let giderNames = [...new Set(state.transactions.filter(t => t.type === 'Gider' || t.category === 'Fon Yatırımı').map(t => t.name))];
+
+                html += `
+                <div class="flex items-center justify-between px-1 mt-2 mb-1 shrink-0">
+                    <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Excel Görünümü</h4>
+                    <span class="text-[9px] text-zinc-500">Sağa doğru kaydırın ➡</span>
+                </div>
+                
+                <!-- Yatay Kaydırılabilir Tablo -->
+                <div class="overflow-x-auto border border-zinc-800/80 rounded-2xl bg-[#121215] no-scrollbar pb-2 shrink-0">
+                    <table class="w-full text-left border-collapse text-[11px] whitespace-nowrap min-w-max">
+                        <thead>
+                            <tr>
+                                <th class="p-3 border-b border-r border-zinc-800 bg-[#1a1a20] text-white font-extrabold sticky-col uppercase tracking-widest text-[10px]">Tarih / Kalem</th>
+                                ${displayMonths.map(m => `<th class="p-3 border-b border-zinc-800 text-center text-[#ccff00] font-extrabold text-[11px]">${m.toUpperCase()}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                // GELİR SATIRLARI
+                gelirNames.forEach(name => {
+                    html += `<tr class="hover:bg-zinc-800/30 transition">
+                        <td class="p-3 border-b border-r border-zinc-800/50 bg-[#18181c] text-zinc-300 font-semibold sticky-col">${name}</td>`;
+                    displayMonths.forEach(mStr => {
+                        let val = state.transactions.filter(t => t.date === mStr && t.name === name).reduce((a,b)=>a+b.amount,0);
+                        html += `<td class="p-3 border-b border-zinc-800/50 text-right ${val > 0 ? 'text-[#10b981]' : 'text-zinc-600'}">${val > 0 ? val.toLocaleString('tr-TR') : '-'}</td>`;
+                    });
+                    html += `</tr>`;
+                });
+
+                // GİDER SATIRLARI
+                giderNames.forEach(name => {
+                    html += `<tr class="hover:bg-zinc-800/30 transition">
+                        <td class="p-3 border-b border-r border-zinc-800/50 bg-[#18181c] text-zinc-300 font-semibold sticky-col">${name}</td>`;
+                    displayMonths.forEach(mStr => {
+                        let val = state.transactions.filter(t => t.date === mStr && t.name === name).reduce((a,b)=>a+b.amount,0);
+                        html += `<td class="p-3 border-b border-zinc-800/50 text-right ${val > 0 ? 'text-[#ef4444]' : 'text-zinc-600'}">${val > 0 ? '-'+val.toLocaleString('tr-TR') : '-'}</td>`;
+                    });
+                    html += `</tr>`;
+                });
+
+                // AYLIK KALAN SATIRI
+                html += `<tr>
+                    <td class="p-3 bg-[#1a1a20] text-white font-extrabold sticky-col border-t border-r border-zinc-700">AYLIK KALAN</td>`;
+                displayMonths.forEach(mStr => {
+                    let mTx = state.transactions.filter(t => t.date === mStr);
+                    let g = mTx.filter(t => t.type === 'Gelir').reduce((a, b) => a + b.amount, 0);
+                    let d = mTx.filter(t => t.type === 'Gider').reduce((a, b) => a + b.amount, 0);
+                    let mNet = g - d;
+                    let color = mNet >= 0 ? 'text-white' : 'text-red-400';
+                    html += `<td class="p-3 text-right font-extrabold border-t border-zinc-700 bg-zinc-800/20 ${color}">${mNet.toLocaleString('tr-TR')}</td>`;
+                });
+                html += `</tr>`;
+
+                // DEVREDEN KASA SATIRI (Tüm geçmişi arkada hesaplar ama sadece istenen ayları basar)
+                html += `<tr>
+                    <td class="p-3 bg-[#1a1a20] text-[#ccff00] font-extrabold sticky-col border-r border-zinc-700 shadow-[0_-2px_10px_rgba(204,255,0,0.05)]">DEVREDEN KASA</td>`;
+                
+                let runningBalance = 0;
                 chronoMonths.forEach(mStr => {
                     let mTx = state.transactions.filter(t => t.date === mStr);
                     let g = mTx.filter(t => t.type === 'Gelir').reduce((a, b) => a + b.amount, 0);
@@ -1029,38 +1093,17 @@
                     let mNet = g - d;
                     runningBalance += mNet;
 
-                    html += `
-                        <div class="min-w-[240px] bg-gradient-to-b from-[#18181c] to-[#121215] border border-zinc-800/80 p-4.5 rounded-2xl flex flex-col space-y-4 snap-center shrink-0 shadow-lg relative overflow-hidden">
-                            <div class="absolute top-0 left-0 w-full h-1 ${runningBalance >= 0 ? 'bg-[#ccff00]' : 'bg-red-500'} opacity-20"></div>
-                            
-                            <div class="flex justify-between items-start">
-                                <span class="text-sm font-extrabold text-white">${mStr}</span>
-                                <div class="flex flex-col items-end">
-                                    <span class="text-[9px] text-zinc-500 font-bold uppercase mb-0.5">DEVREDEN KASA</span>
-                                    <span class="text-xs px-2 py-1 rounded-md ${runningBalance >= 0 ? 'bg-[#ccff00]/10 text-[#ccff00]' : 'bg-red-500/10 text-red-400'} font-bold">${runningBalance.toLocaleString('tr-TR')} ₺</span>
-                                </div>
-                            </div>
-                            
-                            <div class="space-y-2 text-xs">
-                                <div class="flex justify-between items-center bg-[#10b981]/5 p-2 rounded-lg border border-[#10b981]/10">
-                                    <span class="text-zinc-400 font-medium">Ay İçi Gelir:</span> 
-                                    <span class="text-[#10b981] font-bold">+${g.toLocaleString('tr-TR')} ₺</span>
-                                </div>
-                                <div class="flex justify-between items-center bg-[#ef4444]/5 p-2 rounded-lg border border-[#ef4444]/10">
-                                    <span class="text-zinc-400 font-medium">Ay İçi Gider:</span> 
-                                    <span class="text-[#ef4444] font-bold">-${d.toLocaleString('tr-TR')} ₺</span>
-                                </div>
-                                <div class="flex justify-between items-center pt-2 mt-2 border-t border-zinc-800/50 px-1">
-                                    <span class="font-bold text-zinc-300">Aylık Net:</span>
-                                    <span class="font-bold text-sm ${mNet >= 0 ? 'text-white' : 'text-red-400'}">${(mNet > 0 ? '+' : '')}${mNet.toLocaleString('tr-TR')} ₺</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                    // Sadece ekranda gösterilecek aylar için HTML oluştur
+                    if (mStr !== 'Eylül 2026') {
+                        let color = runningBalance >= 0 ? 'text-[#ccff00]' : 'text-red-400';
+                        html += `<td class="p-3 text-right font-extrabold bg-[#ccff00]/10 ${color}">${runningBalance.toLocaleString('tr-TR')} ₺</td>`;
+                    }
                 });
+                html += `</tr>`;
+
+                html += `</tbody></table></div>`;
             }
-            
-            html += `</div>`;
+
             listEl.innerHTML = html;
             document.getElementById('report-modal').style.display = 'flex';
         }
