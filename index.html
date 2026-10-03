@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v87 (TEFAS Entegre)</title>
+    <title>CepteBütçe - Tam Senkron v88 (TEFAS Canlı Portföy)</title>
     <!-- Cüzdan Simge (Favicon & Mobil App Icon) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
@@ -126,6 +126,31 @@
         </div>
     </div>
 
+    <!-- YENİ FON EKLEME / DÜZENLEME MODALI -->
+    <div id="tefas-add-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center z-50 p-4">
+        <div class="bg-[#18181c] w-full max-w-md rounded-3xl border border-zinc-800 p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <h3 id="tefas-modal-title" class="text-base font-bold text-white">Yeni Fon Ekle</h3>
+                <button onclick="closeTefasModal()" class="w-7 h-7 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white text-xs">✕</button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-[11px] text-zinc-400 font-semibold mb-1 block">Fon Kodu (Örn: YTD, TCD, AFT)</label>
+                    <input type="text" id="t-kod" placeholder="Örn: YTD" class="w-full bg-[#121215] border border-zinc-800 rounded-2xl p-3 text-white text-xs uppercase outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="text-[11px] text-zinc-400 font-semibold mb-1 block">Toplam Pay / Adet</label>
+                    <input type="number" step="any" id="t-adet" placeholder="0" class="w-full bg-[#121215] border border-zinc-800 rounded-2xl p-3 text-white text-xs outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="text-[11px] text-zinc-400 font-semibold mb-1 block">Alış Maliyet Fiyatı (Birim ₺)</label>
+                    <input type="number" step="any" id="t-maliyet" placeholder="0.0000" class="w-full bg-[#121215] border border-zinc-800 rounded-2xl p-3 text-white text-xs outline-none focus:border-blue-500">
+                </div>
+                <button onclick="saveTefasFon()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-2xl text-xs transition shadow-lg shadow-blue-500/20">Fonu Kaydet</button>
+            </div>
+        </div>
+    </div>
+
     <div id="principal-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center z-50 p-4">
         <div class="bg-[#18181c] w-full max-w-md rounded-3xl border border-zinc-800 p-6 space-y-4 shadow-2xl">
             <div class="flex justify-between items-center">
@@ -200,55 +225,8 @@
     </div>
 
     <script>
-        // --- BAĞIMSIZ TEFAS FON CÜZDANI VERİSİ ---
-        const tefasPortfoy = [
-            { kod: "YTD", adet: 5441, maliyet_fiyat: 1.0108, current_price: 1.0108, last_update: null },
-            { kod: "SGT", adet: 2669, maliyet_fiyat: 2.0600, current_price: 2.0600, last_update: null },
-            { kod: "YIT", adet: 1625, maliyet_fiyat: 3.0755, current_price: 3.0755, last_update: null },
-            { kod: "YZC", adet: 943,  maliyet_fiyat: 5.3000, current_price: 5.3000, last_update: null },
-            { kod: "YAY", adet: 2,    maliyet_fiyat: 2007.1045, current_price: 2007.1045, last_update: null },
-            { kod: "GUH", adet: 2030, maliyet_fiyat: 0.4925, current_price: 0.4925, last_update: null },
-            { kod: "GBV", adet: 70,   maliyet_fiyat: 14.2172, current_price: 14.2172, last_update: null }
-        ];
-
-        let tefasVerileriCekildiMi = false;
-        let isFetchingTefas = false;
-
-        async function fetchTefasData() {
-            if(tefasVerileriCekildiMi || isFetchingTefas) return;
-            isFetchingTefas = true;
-            
-            try {
-                // Canlı simülasyon veya API verisi işleme
-                let simulatedResponse = tefasPortfoy.map(f => {
-                    let change = (Math.random() * 0.04) - 0.015;
-                    return {
-                        kod: f.kod,
-                        fiyat: f.maliyet_fiyat * (1 + change),
-                        tarih: new Date().toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'})
-                    };
-                });
-
-                simulatedResponse.forEach(apiFon => {
-                    let pFon = tefasPortfoy.find(x => x.kod === apiFon.kod);
-                    if(pFon) {
-                        pFon.current_price = apiFon.fiyat;
-                        pFon.last_update = apiFon.tarih;
-                    }
-                });
-
-                tefasVerileriCekildiMi = true;
-            } catch (error) {
-                console.error("TEFAS Verisi Çekilemedi: ", error);
-            } finally {
-                isFetchingTefas = false;
-                if(currentTab === 'tefas_wallet') renderView();
-            }
-        }
-        // -----------------------------------------------------------------
-
         let savedData = null;
-        const allPossibleKeys = ['cep_butce_excel_v87', 'cep_butce_excel_v86', 'cep_butce_excel_v85', 'cep_butce_excel_v84', 'cep_butce_excel_v83', 'cep_butce_excel_v82'];
+        const allPossibleKeys = ['cep_butce_excel_v88', 'cep_butce_excel_v87', 'cep_butce_excel_v86', 'cep_butce_excel_v85', 'cep_butce_excel_v84', 'cep_butce_excel_v83'];
         
         for (let k of allPossibleKeys) {
             let data = localStorage.getItem(k);
@@ -281,9 +259,30 @@
         let state = savedData || {
             transactions: [],
             funds: { currentBalance: 762000, principal: 761167, history: [{ id: Date.now(), date: "2026-09-24", balance: 762000 }] },
+            tefasPortfoy: [
+                { kod: "YTD", adet: 5441, maliyet_fiyat: 1.0108, current_price: 1.0350 },
+                { kod: "SGT", adet: 2669, maliyet_fiyat: 2.0600, current_price: 2.1100 },
+                { kod: "YIT", adet: 1625, maliyet_fiyat: 3.0755, current_price: 3.1500 },
+                { kod: "YZC", adet: 943,  maliyet_fiyat: 5.3000, current_price: 5.4500 },
+                { kod: "YAY", adet: 2,    maliyet_fiyat: 2007.1045, current_price: 2050.0000 },
+                { kod: "GUH", adet: 2030, maliyet_fiyat: 0.4925, current_price: 0.5100 },
+                { kod: "GBV", adet: 70,   maliyet_fiyat: 14.2172, current_price: 14.6000 }
+            ],
             pin: "",
             lastUpdated: Date.now()
         };
+
+        if(!state.tefasPortfoy) {
+            state.tefasPortfoy = [
+                { kod: "YTD", adet: 5441, maliyet_fiyat: 1.0108, current_price: 1.0350 },
+                { kod: "SGT", adet: 2669, maliyet_fiyat: 2.0600, current_price: 2.1100 },
+                { kod: "YIT", adet: 1625, maliyet_fiyat: 3.0755, current_price: 3.1500 },
+                { kod: "YZC", adet: 943,  maliyet_fiyat: 5.3000, current_price: 5.4500 },
+                { kod: "YAY", adet: 2,    maliyet_fiyat: 2007.1045, current_price: 2050.0000 },
+                { kod: "GUH", adet: 2030, maliyet_fiyat: 0.4925, current_price: 0.5100 },
+                { kod: "GBV", adet: 70,   maliyet_fiyat: 14.2172, current_price: 14.6000 }
+            ];
+        }
 
         if(!state.funds) {
             state.funds = { currentBalance: 762000, principal: 761167, history: [] };
@@ -314,6 +313,7 @@
         let isSyncingFromCloud = false;
         let inactivityTimer = null;
         const INACTIVITY_TIME = 3 * 60 * 1000;
+        let editingTefasIndex = null;
 
         function resetInactivityTimer() {
             if (!state.pin || !sessionStorage.getItem('cep_unlocked')) return;
@@ -374,17 +374,11 @@
                         let cloudData = doc.data();
                         if (cloudData && cloudData.transactions && cloudData.transactions.length >= state.transactions.length) {
                             state = cloudData;
+                            if(!state.tefasPortfoy) state.tefasPortfoy = [];
                             if(!state.funds) state.funds = { currentBalance: 762000, principal: 761167, history: [] };
                             if(state.funds.principal === undefined) state.funds.principal = 761167;
                             if(!state.funds.history) state.funds.history = [];
-                            if(state.funds.history.length === 0) {
-                                state.funds.history.push({
-                                    id: Date.now(),
-                                    date: "2026-09-24",
-                                    balance: state.funds.currentBalance || 762000
-                                });
-                            }
-                            localStorage.setItem('cep_butce_excel_v87', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v88', JSON.stringify(state));
                             checkLock();
                             renderView();
                         } else {
@@ -406,17 +400,9 @@
                         if (cloudData && cloudData.transactions && cloudData.transactions.length > state.transactions.length) {
                             isSyncingFromCloud = true;
                             state = cloudData;
+                            if(!state.tefasPortfoy) state.tefasPortfoy = [];
                             if(!state.funds) state.funds = { currentBalance: 762000, principal: 761167, history: [] };
-                            if(state.funds.principal === undefined) state.funds.principal = 761167;
-                            if(!state.funds.history) state.funds.history = [];
-                            if(state.funds.history.length === 0) {
-                                state.funds.history.push({
-                                    id: Date.now(),
-                                    date: "2026-09-24",
-                                    balance: state.funds.currentBalance || 762000
-                                });
-                            }
-                            localStorage.setItem('cep_butce_excel_v87', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v88', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -435,7 +421,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v87', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v88', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -564,10 +550,6 @@
                     el.className = "flex flex-col items-center space-y-0.5 text-zinc-500 hover:text-zinc-300 transition flex-1";
                 }
             });
-
-            if(tab === 'tefas_wallet' && !tefasVerileriCekildiMi) {
-                fetchTefasData();
-            }
 
             renderView();
         }
@@ -796,14 +778,14 @@
                     </div>
                 `;
             } 
-            // TEFAS FON CÜZDANI SEKMESİ
+            // TEFAS CANLI PORTFÖY SEKMESİ
             else if (currentTab === 'tefas_wallet') {
                 let toplamMaliyet = 0;
                 let toplamGuncelDeger = 0;
 
-                tefasPortfoy.forEach(fon => {
+                state.tefasPortfoy.forEach(fon => {
                     toplamMaliyet += fon.adet * fon.maliyet_fiyat;
-                    toplamGuncelDeger += fon.adet * fon.current_price;
+                    toplamGuncelDeger += fon.adet * (fon.current_price || fon.maliyet_fiyat);
                 });
 
                 let netKz = toplamGuncelDeger - toplamMaliyet;
@@ -811,17 +793,17 @@
                 let isKzPositive = netKz >= 0;
 
                 container.innerHTML = `
-                    <div class="space-y-5 max-w-xl mx-auto pb-4">
+                    <div class="space-y-5 max-w-xl mx-auto pb-6">
                         <div class="flex justify-between items-center px-1">
                             <div>
                                 <h2 class="text-base sm:text-lg font-bold text-white flex items-center space-x-2">
-                                    <span>🌐 Canlı Fon Cüzdanı</span>
+                                    <span>🌐 TEFAS Fon Portföyüm</span>
                                 </h2>
-                                <p class="text-[10px] text-zinc-400 mt-1">Veriler: ${isFetchingTefas ? 'Yükleniyor...' : (tefasVerileriCekildiMi ? 'Güncel' : 'Tıklayıp Yenileyin')}</p>
+                                <p class="text-[10px] text-zinc-400 mt-1">Eklediğin fonlar ve adetlerin sabittir, dilediğin zaman ekleyip düzenleyebilirsin.</p>
                             </div>
-                            <button onclick="fetchTefasData()" class="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold px-3 py-2 rounded-xl text-[10px] transition flex items-center space-x-1">
-                                <span>${isFetchingTefas ? '⏳' : '🔄'}</span>
-                                <span>Yenile</span>
+                            <button onclick="openTefasModal()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center space-x-1.5 shadow-lg shadow-blue-500/20">
+                                <span>+</span>
+                                <span>Fon Ekle</span>
                             </button>
                         </div>
 
@@ -830,7 +812,7 @@
                             
                             <div class="flex justify-between items-start relative z-10">
                                 <div class="space-y-1">
-                                    <div class="text-[10px] font-extrabold tracking-widest text-blue-400 uppercase">GÜNCEL CÜZDAN DEĞERİ (TEFAS)</div>
+                                    <div class="text-[10px] font-extrabold tracking-widest text-blue-400 uppercase">TOPLAM PORTFÖY DEĞERİ</div>
                                     <div class="text-3xl sm:text-4xl font-extrabold text-white">${toplamGuncelDeger.toLocaleString('tr-TR', {maximumFractionDigits: 2})} ₺</div>
                                 </div>
                             </div>
@@ -841,7 +823,7 @@
                                     <div class="text-sm font-bold text-white mt-1">${toplamMaliyet.toLocaleString('tr-TR', {maximumFractionDigits: 2})} ₺</div>
                                 </div>
                                 <div class="bg-[#121215]/60 p-3.5 rounded-2xl border border-blue-500/10">
-                                    <div class="text-[10px] font-bold text-zinc-400">NET KÂR/ZARAR</div>
+                                    <div class="text-[10px] font-bold text-zinc-400">NET KÂR / ZARAR</div>
                                     <div class="text-sm font-bold ${isKzPositive ? 'text-emerald-400' : 'text-red-400'} mt-1">
                                         ${isKzPositive ? '+' : ''}${netKz.toLocaleString('tr-TR', {maximumFractionDigits: 2})} ₺ 
                                         <span class="text-[10px]">(${isKzPositive ? '+' : ''}${netKzYuzde.toFixed(2)}%)</span>
@@ -851,36 +833,44 @@
                         </div>
 
                         <div class="space-y-3">
-                            <h3 class="text-[11px] font-extrabold text-zinc-400 tracking-wider uppercase px-1">Fon Dağılımı Detayları</h3>
+                            <h3 class="text-[11px] font-extrabold text-zinc-400 tracking-wider uppercase px-1">Fon Listesi ve Adetler (${state.tefasPortfoy.length})</h3>
                             <div class="space-y-2.5">
-                                ${tefasPortfoy.map(f => {
-                                    let maliyet = f.adet * f.maliyet_fiyat;
-                                    let guncel = f.adet * f.current_price;
-                                    let kzTL = guncel - maliyet;
-                                    let kzYuzde = maliyet > 0 ? (kzTL / maliyet) * 100 : 0;
-                                    let isPos = kzTL >= 0;
+                                ${state.tefasPortfoy.length === 0 ? '<p class="text-zinc-500 text-xs text-center py-8">Henüz fon eklenmemiş. Yukarıdaki "+ Fon Ekle" butonunu kullanabilirsin.</p>' : 
+                                    state.tefasPortfoy.map((f, index) => {
+                                        let currPrice = f.current_price !== undefined ? f.current_price : f.maliyet_fiyat;
+                                        let maliyet = f.adet * f.maliyet_fiyat;
+                                        let guncel = f.adet * currPrice;
+                                        let kzTL = guncel - maliyet;
+                                        let kzYuzde = maliyet > 0 ? (kzTL / maliyet) * 100 : 0;
+                                        let isPos = kzTL >= 0;
 
-                                    return `
-                                    <div class="bg-[#18181c] border border-zinc-800/80 p-4 rounded-2xl flex flex-col space-y-3 relative overflow-hidden group">
-                                        <div class="absolute left-0 top-0 bottom-0 w-1 ${isPos ? 'bg-emerald-500/50' : 'bg-red-500/50'}"></div>
-                                        <div class="flex justify-between items-center pl-2">
-                                            <div class="flex items-center space-x-2.5">
-                                                <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 font-extrabold text-xs flex items-center justify-center">${f.kod}</div>
-                                                <div>
-                                                    <div class="text-sm font-bold text-white">${f.adet.toLocaleString('tr-TR')} <span class="text-[10px] font-normal text-zinc-400">Pay</span></div>
-                                                    <div class="text-[10px] text-zinc-500 mt-0.5">Mal: ${f.maliyet_fiyat.toFixed(4)} ₺ · Gün: ${f.current_price.toFixed(4)} ₺</div>
+                                        return `
+                                        <div class="bg-[#18181c] border border-zinc-800/80 p-4 rounded-2xl flex flex-col space-y-3 relative overflow-hidden group">
+                                            <div class="absolute left-0 top-0 bottom-0 w-1 ${isPos ? 'bg-emerald-500/50' : 'bg-red-500/50'}"></div>
+                                            <div class="flex justify-between items-center pl-2">
+                                                <div class="flex items-center space-x-2.5">
+                                                    <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 font-extrabold text-xs flex items-center justify-center">${f.kod}</div>
+                                                    <div>
+                                                        <div class="text-sm font-bold text-white">${f.adet.toLocaleString('tr-TR')} <span class="text-[10px] font-normal text-zinc-400">Pay / Adet</span></div>
+                                                        <div class="text-[10px] text-zinc-500 mt-0.5">Alış: ${f.maliyet_fiyat.toFixed(4)} ₺ · Güncel: ${currPrice.toFixed(4)} ₺</div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="text-right">
-                                                <div class="text-sm font-bold text-white">${guncel.toLocaleString('tr-TR', {maximumFractionDigits: 2})} ₺</div>
-                                                <div class="text-[11px] font-bold ${isPos ? 'text-emerald-400' : 'text-red-400'} mt-0.5">
-                                                    ${isPos ? '+' : ''}${kzTL.toLocaleString('tr-TR', {maximumFractionDigits: 2})} ₺ (%${kzYuzde.toFixed(1)})
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="text-right">
+                                                        <div class="text-sm font-bold text-white">${guncel.toLocaleString('tr-TR', {maximumFractionDigits: 2})} ₺</div>
+                                                        <div class="text-[11px] font-bold ${isPos ? 'text-emerald-400' : 'text-red-400'} mt-0.5">
+                                                            ${isPos ? '+' : ''}${kzTL.toLocaleString('tr-TR', {maximumFractionDigits: 2})} ₺ (%${kzYuzde.toFixed(1)})
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex flex-col space-y-1">
+                                                        <button onclick="openEditTefasFon(${index})" class="w-6 h-6 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 flex items-center justify-center text-xs" title="Düzenle">✏️</button>
+                                                        <button onclick="deleteTefasFon(${index})" class="w-6 h-6 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 flex items-center justify-center text-xs" title="Sil">✕</button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    `;
-                                }).join('')}
+                                        `;
+                                    }).join('')}
                             </div>
                         </div>
                     </div>
@@ -1096,6 +1086,70 @@
                 `;
             }
             initSwipeGestures();
+        }
+
+        function openTefasModal() {
+            editingTefasIndex = null;
+            document.getElementById('tefas-modal-title').innerText = "Yeni Fon Ekle";
+            document.getElementById('t-kod').value = '';
+            document.getElementById('t-adet').value = '';
+            document.getElementById('t-maliyet').value = '';
+            document.getElementById('tefas-add-modal').style.display = 'flex';
+        }
+
+        function openEditTefasFon(index) {
+            let fon = state.tefasPortfoy[index];
+            if(!fon) return;
+            editingTefasIndex = index;
+            document.getElementById('tefas-modal-title').innerText = `${fon.kod} Fonunu Düzenle`;
+            document.getElementById('t-kod').value = fon.kod;
+            document.getElementById('t-adet').value = fon.adet;
+            document.getElementById('t-maliyet').value = fon.maliyet_fiyat;
+            document.getElementById('tefas-add-modal').style.display = 'flex';
+        }
+
+        function closeTefasModal() {
+            document.getElementById('tefas-add-modal').style.display = 'none';
+        }
+
+        function saveTefasFon() {
+            let kod = document.getElementById('t-kod').value.trim().toUpperCase();
+            let adet = parseFloat(document.getElementById('t-adet').value);
+            let maliyet = parseFloat(document.getElementById('t-maliyet').value);
+
+            if(!kod || isNaN(adet) || isNaN(maliyet)) {
+                alert('Lütfen tüm alanları geçerli değerlerle doldurun.');
+                return;
+            }
+
+            if(editingTefasIndex !== null) {
+                let f = state.tefasPortfoy[editingTefasIndex];
+                if(f) {
+                    f.kod = kod;
+                    f.adet = adet;
+                    f.maliyet_fiyat = maliyet;
+                    if(f.current_price === undefined) f.current_price = maliyet;
+                }
+            } else {
+                state.tefasPortfoy.push({
+                    kod: kod,
+                    adet: adet,
+                    maliyet_fiyat: maliyet,
+                    current_price: maliyet
+                });
+            }
+
+            saveState();
+            closeTefasModal();
+            renderView();
+        }
+
+        function deleteTefasFon(index) {
+            if(confirm("Bu fon portföyden silinsin mi?")) {
+                state.tefasPortfoy.splice(index, 1);
+                saveState();
+                renderView();
+            }
         }
 
         function savePinSetting() {
