@@ -86,7 +86,7 @@
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                 <span class="text-[9px] sm:text-[10px] font-medium">Portföyüm</span>
             </button>
-            <!-- YENİ TEFAS FON CÜZDANI BUTONU -->
+            <!-- TEFAS FON CÜZDANI BUTONU -->
             <button onclick="changeTab('tefas_wallet')" id="tab-tefas_wallet" class="flex flex-col items-center space-y-0.5 text-zinc-500 hover:text-zinc-300 transition flex-1 relative">
                 <div class="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -200,8 +200,7 @@
     </div>
 
     <script>
-        // --- BAĞIMSIZ YENİ TEFAS FON CÜZDANI VERİSİ (Sadece Bellekte) ---
-        // Uygulamanın diğer veritabanını BOZMAMAK için tamamen ayrıştırıldı.
+        // --- BAĞIMSIZ TEFAS FON CÜZDANI VERİSİ ---
         const tefasPortfoy = [
             { kod: "YTD", adet: 5441, maliyet_fiyat: 1.0108, current_price: 1.0108, last_update: null },
             { kod: "SGT", adet: 2669, maliyet_fiyat: 2.0600, current_price: 2.0600, last_update: null },
@@ -220,15 +219,9 @@
             isFetchingTefas = true;
             
             try {
-                // Ücretsiz, CORS izinli JSON API kullanarak TEFAS verilerini çekiyoruz
-                // Not: TEFAS'ın resmi bir açık API'si olmadığı için, kurumsal olarak güncellenen ücretsiz bir servisi (fintables / yahoo finance / collectapi vs) veya bu portföy için mock canlı veriyi (burada demo amaçlı güncel fiyatlara yakın bir simülasyon api veya gerçek api kullanabiliriz. Tarayıcıdan doğrudan TEFAS html'si CORS hatası verir. Bu yüzden proxy veya açık api şarttır.)
-                // Burada entegrasyonu tamamen açık, sorunsuz çalışan public bir yapıya simüle ederek proxy üzerinden fetch ediyoruz:
-                
-                // Gerçek bir senaryoda buraya senin bir cloud function'ının veya ücretsiz bir API'nin adresi gelir:
-                // Şimdilik fiyatların %0.5 - %1.5 arasında canlı değiştiğini gösteren yerel bir hesaplama koyuyoruz, arayüzü görebilmen için.
-                
+                // Canlı simülasyon veya API verisi işleme
                 let simulatedResponse = tefasPortfoy.map(f => {
-                    let change = (Math.random() * 0.04) - 0.015; // -%1.5 ile +%2.5 arası günlük değişim simülasyonu
+                    let change = (Math.random() * 0.04) - 0.015;
                     return {
                         kod: f.kod,
                         fiyat: f.maliyet_fiyat * (1 + change),
@@ -236,7 +229,6 @@
                     };
                 });
 
-                // Gelen verileri yerel değişkene işliyoruz (Ana veritabanını asla etkilemez)
                 simulatedResponse.forEach(apiFon => {
                     let pFon = tefasPortfoy.find(x => x.kod === apiFon.kod);
                     if(pFon) {
@@ -255,9 +247,8 @@
         }
         // -----------------------------------------------------------------
 
-
         let savedData = null;
-        const allPossibleKeys = ['cep_butce_excel_v86', 'cep_butce_excel_v85', 'cep_butce_excel_v84', 'cep_butce_excel_v83', 'cep_butce_excel_v82', 'cep_butce_excel_v81'];
+        const allPossibleKeys = ['cep_butce_excel_v87', 'cep_butce_excel_v86', 'cep_butce_excel_v85', 'cep_butce_excel_v84', 'cep_butce_excel_v83', 'cep_butce_excel_v82'];
         
         for (let k of allPossibleKeys) {
             let data = localStorage.getItem(k);
@@ -309,7 +300,7 @@
 
         if(!state.lastUpdated) state.lastUpdated = Date.now();
 
-        // Firebase Firestore Otomatik Entegrasyonu
+        // Firebase Firestore Entegrasyonu
         const firebaseConfig = {
             apiKey: "AIzaSyCLxx02KpBH2MFGXEePIb-w79FVwOBW4GQ",
             authDomain: "butce-24f0f.firebaseapp.com",
@@ -393,7 +384,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v86', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v87', JSON.stringify(state));
                             checkLock();
                             renderView();
                         } else {
@@ -425,7 +416,7 @@
                                     balance: state.funds.currentBalance || 762000
                                 });
                             }
-                            localStorage.setItem('cep_butce_excel_v86', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v87', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -444,7 +435,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v86', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v87', JSON.stringify(state));
 
             if(db) {
                 db.collection("cepButce").doc("anaVeri").set(state)
@@ -460,7 +451,6 @@
         }
 
         let currentTab = 'home';
-        // Tab Order'a tefas_wallet'ı ekliyoruz
         const tabOrder = ['home', 'income', 'expense', 'fund', 'tefas_wallet', 'settings'];
         let editingTxId = null;
         let editingHistoryId = null;
@@ -575,7 +565,6 @@
                 }
             });
 
-            // Eğer tefas tabına girildiyse ve veri çekilmediyse tetikle
             if(tab === 'tefas_wallet' && !tefasVerileriCekildiMi) {
                 fetchTefasData();
             }
@@ -656,7 +645,6 @@
             
             let monthTx = state.transactions.filter(t => t.date === activeMonthStr);
 
-            // Mevcut (Eski) Fonlar (Portföy) Hesaplaması
             let historyList = state.funds.history || [];
             historyList.sort((a, b) => new Date(a.date) - new Date(b.date));
             
@@ -760,7 +748,6 @@
                             </button>
                         </div>
 
-                        <!-- AYLIK DETAYLI LİSTE (SOL GELİR - SAĞ GİDER) -->
                         <div class="pt-2">
                             <h3 class="text-[11px] font-extrabold text-zinc-400 tracking-wider uppercase mb-3 px-1">Aylık Liste · ${activeMonthStr.toUpperCase()}</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
@@ -798,7 +785,7 @@
                                                     </div>
                                                     <div class="flex items-center space-x-1.5 shrink-0">
                                                         <span class="font-bold text-[11px] sm:text-xs text-[#ef4444]">${t.amount.toLocaleString('tr-TR', {maximumFractionDigits: 0})}</span>
-                                                        <button onclick="openEditModal(${t.id})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 w-6 h-6 rounded-lg flex items-center justify-center text-xs transition">✏</button>
+                                                        <button onclick="openEditModal(${t.id})" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 w-6 h-6 rounded-lg flex items-center justify-center text-xs transition">✏️</button>
                                                     </div>
                                                 </div>
                                             `).join('')}
@@ -809,11 +796,8 @@
                     </div>
                 `;
             } 
-            // -------------------------------------------------------------
-            // YENİ SEKMEYİ (TEFAS_WALLET) İNŞA EDİYORUZ
-            // -------------------------------------------------------------
+            // TEFAS FON CÜZDANI SEKMESİ
             else if (currentTab === 'tefas_wallet') {
-                
                 let toplamMaliyet = 0;
                 let toplamGuncelDeger = 0;
 
@@ -902,9 +886,6 @@
                     </div>
                 `;
             }
-            // -------------------------------------------------------------
-            // DİĞER SEKMELER AYNEN KALIYOR
-            // -------------------------------------------------------------
             else if (currentTab === 'income') {
                 let gelirList = monthTx.filter(t => t.type === 'Gelir' || t.category === 'Fondan Çek');
                 container.innerHTML = `
