@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v96 (Gerçek TEFAS Bağlantısı)</title>
+    <title>CepteBütçe - Tam Senkron v97 (3'lü Proxy Sistemi)</title>
     <!-- Cüzdan Simge -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     
@@ -141,7 +141,7 @@
                     <label class="text-[11px] text-zinc-400 font-semibold mb-1 block">Alış Maliyet Fiyatı (Birim ₺) <span class="text-zinc-500">(Boş bırakırsanız TEFAS'tan otomatik çekilir)</span></label>
                     <input type="number" step="any" id="t-maliyet" placeholder="Boş bırakılabilir" class="w-full bg-[#121215] border border-zinc-800 rounded-2xl p-3 text-white text-xs outline-none focus:border-blue-500">
                 </div>
-                <button onclick="saveTefasFon()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-2xl text-xs transition shadow-lg shadow-blue-500/20">Fonu Kaydet / Lot Ekle</button>
+                <button id="btn-save-tefas" onclick="saveTefasFon()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-2xl text-xs transition shadow-lg shadow-blue-500/20">Fonu Kaydet / Lot Ekle</button>
             </div>
         </div>
     </div>
@@ -222,7 +222,7 @@
     <script>
         // Veritabanı State Yönetimi
         let savedData = null;
-        const allPossibleKeys = ['cep_butce_excel_v96', 'cep_butce_excel_v95', 'cep_butce_excel_v94', 'cep_butce_excel_v93'];
+        const allPossibleKeys = ['cep_butce_excel_v97', 'cep_butce_excel_v96', 'cep_butce_excel_v95', 'cep_butce_excel_v94', 'cep_butce_excel_v93'];
         
         for (let k of allPossibleKeys) {
             let data = localStorage.getItem(k);
@@ -333,7 +333,7 @@
                             state = cloudData;
                             if(!state.tefasPortfoy) state.tefasPortfoy = [];
                             if(!state.funds) state.funds = { currentBalance: 769905, principal: 761167, history: [] };
-                            localStorage.setItem('cep_butce_excel_v96', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v97', JSON.stringify(state));
                             checkLock();
                             renderView();
                         } else {
@@ -354,7 +354,7 @@
                             isSyncingFromCloud = true;
                             state = cloudData;
                             if(!state.tefasPortfoy) state.tefasPortfoy = [];
-                            localStorage.setItem('cep_butce_excel_v96', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v97', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -367,7 +367,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v96', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v97', JSON.stringify(state));
             if(db) db.collection("cepButce").doc("anaVeri").set(state).catch(e => {});
         }
 
@@ -451,7 +451,34 @@
             return { devredenBakiye, buAyGelir, buAyGider, toplamBakiye: devredenBakiye + buAyGelir - buAyGider };
         }
 
-        // TEFAS MODÜLÜ (TAMAMEN GERÇEK VERİ - SİMÜLASYON İPTAL EDİLDİ)
+        // 3 YEDEKLİ PROXY İLE HTML KAZIMA (SCRAPING) MOTORU
+        async function fetchHtml(targetUrl) {
+            let proxies = [
+                'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl),
+                'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(targetUrl),
+                'https://corsproxy.io/?' + encodeURIComponent(targetUrl)
+            ];
+            
+            for (let proxy of proxies) {
+                try {
+                    let res = await fetch(proxy, { cache: "no-store" });
+                    if (!res.ok) continue;
+                    
+                    if (proxy.includes('allorigins')) {
+                        let json = await res.json();
+                        if (json.contents) return json.contents;
+                    } else {
+                        let text = await res.text();
+                        if (text) return text;
+                    }
+                } catch(e) {
+                    continue; // Hata verirse diğer proxy'e geç
+                }
+            }
+            throw new Error("Tüm proxy servisleri başarısız.");
+        }
+
+        // TEFAS FİYAT ÇEKME (API YERİNE NORMAL SAYFA OKUMA)
         async function fetchAllTefasPrices() {
             if(!state.tefasPortfoy || state.tefasPortfoy.length === 0) {
                 alert("Portföyünüzde fon bulunmuyor.");
@@ -459,53 +486,42 @@
             }
 
             let btn = document.getElementById('tefas-update-btn');
-            if(btn) { btn.innerText = "⏳ Güncelleniyor..."; btn.disabled = true; }
+            if(btn) { btn.innerText = "⏳ Sayfalar Okunuyor..."; btn.disabled = true; }
 
+            let count = 0;
             try {
-                let today = currentSystemDate.toISOString().split('T')[0];
-                let formattedDate = today.split('-').reverse().join('.');
-                
-                // CORS Engelini Aşmak İçin Proxy Kullanıyoruz
-                let targetUrl = 'https://tefas.gov.tr/api/db/bindhistory';
-                let proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
-
-                let res = await fetch(proxyUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `sart=1&baslangic=01.01.2026&bitis=${formattedDate}`
-                });
-                
-                if (!res.ok) throw new Error("TEFAS proxy hatası");
-
-                let data = await res.json();
-                let count = 0;
-
                 for (let fon of state.tefasPortfoy) {
                     let kod = fon.kod.toUpperCase();
-                    let price = null;
-                    if(data && data.data) {
-                        let found = data.data.find(x => x.FONKODU === kod);
-                        if(found && found.FIYAT) price = parseFloat(found.FIYAT.toString().replace(',', '.'));
-                    }
-
-                    // SADECE Gerçek fiyat bulunursa günceller
-                    if(price && !isNaN(price)) {
-                        fon.current_price = price;
-                        count++;
+                    try {
+                        let url = 'https://www.tefas.gov.tr/FonAnaliz.aspx?FonKod=' + kod;
+                        let html = await fetchHtml(url);
+                        
+                        // HTML içindeki Son Fiyat ibaresini bul ve rakamı al
+                        let match = html.match(/Son Fiyat.*?<\/span>\s*<span[^>]*>([\d,.]+)<\/span>/i);
+                        if(match && match[1]) {
+                            // Format düzeltme (1.234,56 -> 1234.56)
+                            let priceStr = match[1].replace(/\./g, '').replace(',', '.');
+                            let price = parseFloat(priceStr);
+                            if(!isNaN(price)) {
+                                fon.current_price = price;
+                                count++;
+                            }
+                        }
+                    } catch(e) {
+                        console.log(kod + " güncellenemedi:", e);
                     }
                 }
 
                 if(count > 0) {
                     saveState();
                     renderView();
-                    alert(`✅ Başarılı! ${count} adet fonun güncel fiyatı TEFAS'tan çekildi.`);
+                    alert(`✅ Başarılı! ${count} adet fonun güncel fiyatı çekildi.`);
                 } else {
-                    alert("⚠️ TEFAS'tan güncel fiyat bulunamadı (Tatil günü veya veri henüz işlenmemiş olabilir). Mevcut fiyatlarınız sabit bırakıldı.");
+                    alert("⚠️ TEFAS'tan güncel fiyat bulunamadı (Tatil günü, piyasa kapalı veya sunucu engeli). Mevcut fiyatlarınız sabit bırakıldı.");
                 }
 
             } catch(e) {
-                // HATA DURUMUNDA HİÇBİR VERİ DEĞİŞTİRİLMEZ
-                alert("⚠️ TEFAS sunucusuna bağlanılamadı (Güvenlik engeli veya ağ hatası). Verileriniz hiçbir şekilde değiştirilmedi.");
+                alert("⚠️ TEFAS sunucusuna bağlanılamadı. İnternet bağlantınızı kontrol edin.");
             } finally {
                 if(btn) { btn.innerText = "🔄 Fiyatları Çek"; btn.disabled = false; }
             }
@@ -791,22 +807,24 @@
             let maliyet = parseFloat(document.getElementById('t-maliyet').value);
             if(!kod || isNaN(adet)) { alert('Lütfen fon kodu ve adet girin.'); return; }
             
+            let btnEl = document.getElementById('btn-save-tefas');
+            
+            // Eğer maliyet boşsa TEFAS'tan çek
             if(isNaN(maliyet)) {
-                maliyet = 10.50; // Geçici
                 try {
-                    let targetUrl = 'https://tefas.gov.tr/api/db/bindhistory';
-                    let proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
-                    let res = await fetch(proxyUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: `sart=1&baslangic=01.01.2026&bitis=${currentSystemDate.toISOString().split('T')[0].split('-').reverse().join('.')}`
-                    });
-                    if(res.ok) {
-                        let d = await res.json();
-                        let m = d.data.find(x => x.FONKODU === kod);
-                        if(m && m.FIYAT) maliyet = parseFloat(m.FIYAT.toString().replace(',', '.'));
+                    if(btnEl) { btnEl.innerText = "⏳ Sayfa Taranıyor..."; btnEl.disabled = true; }
+                    let url = 'https://www.tefas.gov.tr/FonAnaliz.aspx?FonKod=' + kod;
+                    let html = await fetchHtml(url);
+                    let match = html.match(/Son Fiyat.*?<\/span>\s*<span[^>]*>([\d,.]+)<\/span>/i);
+                    if(match && match[1]) {
+                        maliyet = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
                     }
                 } catch(e){}
+                
+                if(isNaN(maliyet)) {
+                    maliyet = 10.00; // Son çare sahte maliyet
+                    alert("Uyarı: Maliyet otomatik bulunamadı, 10.00 olarak eklendi. Lütfen kalem ile düzenleyin.");
+                }
             }
             
             if (editingTefasIndex !== null) {
@@ -826,6 +844,8 @@
                     state.tefasPortfoy.push({ kod, adet, maliyet_fiyat: maliyet, current_price: maliyet });
                 }
             }
+            
+            if(btnEl) { btnEl.innerText = "Fonu Kaydet / Lot Ekle"; btnEl.disabled = false; }
             saveState(); closeTefasModal(); renderView();
         }
 
