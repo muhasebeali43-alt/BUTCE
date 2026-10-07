@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - v100 (WAF Bypass & Akıllı Tarama)</title>
+    <title>CepteBütçe - v101 (Hayalet Mod & Anti-Cloudflare)</title>
     <!-- Cüzdan Simge -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     
@@ -216,7 +216,7 @@
     <script>
         // Veritabanı State Yönetimi
         let savedData = null;
-        const allPossibleKeys = ['cep_butce_excel_v100', 'cep_butce_excel_v99', 'cep_butce_excel_v98', 'cep_butce_excel_v97'];
+        const allPossibleKeys = ['cep_butce_excel_v101', 'cep_butce_excel_v100', 'cep_butce_excel_v99', 'cep_butce_excel_v98', 'cep_butce_excel_v97'];
         
         for (let k of allPossibleKeys) {
             let data = localStorage.getItem(k);
@@ -325,7 +325,7 @@
                             state = cloudData;
                             if(!state.tefasPortfoy) state.tefasPortfoy = [];
                             if(!state.funds) state.funds = { currentBalance: 769905, principal: 761167, history: [] };
-                            localStorage.setItem('cep_butce_excel_v100', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v101', JSON.stringify(state));
                             checkLock();
                             renderView();
                         } else {
@@ -346,7 +346,7 @@
                             isSyncingFromCloud = true;
                             state = cloudData;
                             if(!state.tefasPortfoy) state.tefasPortfoy = [];
-                            localStorage.setItem('cep_butce_excel_v100', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v101', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -359,7 +359,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v100', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v101', JSON.stringify(state));
             if(db) db.collection("cepButce").doc("anaVeri").set(state).catch(e => {});
         }
 
@@ -436,7 +436,7 @@
         }
 
         // ==========================================
-        // V100: KESİN ÇÖZÜM - CSR BYPASS VE AĞIR PROXY MOTORU
+        // V101: HAYALET MOD (ANTI-CLOUDFLARE)
         // ==========================================
         async function fetchWithTimeout(url, timeout = 7500) {
             const controller = new AbortController();
@@ -452,68 +452,62 @@
         }
 
         async function fetchHtml(targetUrl) {
-            // WAF engelini aşmak için en sağlam 3 proxy altyapısı (Raw formatta)
             let proxies = [
-                'https://corsproxy.io/?' + encodeURIComponent(targetUrl),
                 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl),
-                'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(targetUrl)
+                'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(targetUrl),
+                'https://corsproxy.io/?' + encodeURIComponent(targetUrl)
             ];
             
             for (let proxy of proxies) {
                 try {
-                    let res = await fetchWithTimeout(proxy, 7500); 
+                    let res = await fetchWithTimeout(proxy, 6000); 
                     if (res.ok) {
                         let text = await res.text();
                         if (text && text.length > 500) return text;
                     }
-                } catch(e) {
-                    console.warn("Proxy engeli:", proxy);
-                }
+                } catch(e) {}
             }
-            return null; // Tümü engellendiyse
+            return null;
         }
 
         async function getPriceForFund(kod) {
-            let sources = [
-                `https://www.tefas.gov.tr/tr/fon-detayli-analiz/${kod}`, 
-                `https://fintables.com/fonlar/${kod}`,                 
-                `https://www.yatirimdirekt.com/fonlar/${kod}`          
-            ];
-
-            let lastError = "";
-            for(let sourceUrl of sources) {
-                let html = await fetchHtml(sourceUrl);
-                if(!html) {
-                    lastError = "Cloudflare Güvenlik Duvarı Proxy'yi engelledi.";
-                    continue;
-                }
-                
-                // DİKKAT: Artık scriptleri silmiyoruz, JSON verisini de tarıyoruz!
-                let regexes = [
-                    // Virgüllü Türk formatları
-                    /(?:Fiyat|Son Fiyat|Fiyatı|Güncel|Değer|price)[\s\S]{0,150}?(\d{1,3}(?:\.\d{3})*,\d{2,6})/i,
-                    />\s*(\d{1,3}(?:\.\d{3})*,\d{4,6})\s*</,
-                    /["'](\d{1,3}(?:\.\d{3})*,\d{4,6})["']/
-                ];
-                
-                for(let rx of regexes) {
-                    let match = html.match(rx);
-                    if(match && match[1]) {
-                        let price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
-                        if(!isNaN(price) && price > 0.0001) return price;
+            kod = kod.toUpperCase();
+            
+            // KAPI 1: Açık Kaynak Topluluk API'si (En hızlısı, engelsiz)
+            try {
+                let apiRes = await fetchWithTimeout("https://www.hasanadiguzel.com.tr/api/tefas", 4000);
+                if(apiRes.ok) {
+                    let json = await apiRes.json();
+                    if(json && json.data) {
+                        let fund = json.data.find(f => f.kod === kod);
+                        if(fund && fund.fiyat) return parseFloat(fund.fiyat);
                     }
                 }
-                
-                // Noktalı ondalıklı JSON API formatları
-                let jsonMatch = html.match(/(?:price|lastPrice|fiyat|fiyati)["']?\s*:\s*["']?(\d+\.\d{2,6})/i);
-                if (jsonMatch) {
-                    let price = parseFloat(jsonMatch[1]);
+            } catch(e) {}
+
+            // KAPI 2: İş Yatırım (Güvenlik duvarı zayıf, tüm fonlar var)
+            let isYatirimUrl = "https://www.isyatirim.com.tr/tr-tr/analiz/fon/Sayfalar/fon-detay.aspx?fonkod=" + kod;
+            let isYatirimHtml = await fetchHtml(isYatirimUrl);
+            if(isYatirimHtml) {
+                let matches = isYatirimHtml.match(/(\d{1,3}(?:\.\d{3})*,\d{4,6})/);
+                if(matches && matches[1]) {
+                    let price = parseFloat(matches[1].replace(/\./g, '').replace(',', '.'));
                     if(!isNaN(price) && price > 0.0001) return price;
                 }
-                
-                lastError = "Siteye erişildi ama yeni tasarımda fiyat satırı tespit edilemedi.";
             }
-            throw new Error(lastError);
+
+            // KAPI 3: Orijinal TEFAS (Son çare)
+            let tefasUrl = "https://www.tefas.gov.tr/tr/fon-detayli-analiz/" + kod;
+            let tefasHtml = await fetchHtml(tefasUrl);
+            if(tefasHtml) {
+                let matches = tefasHtml.match(/(\d{1,3}(?:\.\d{3})*,\d{4,6})/);
+                if(matches && matches[1]) {
+                    let price = parseFloat(matches[1].replace(/\./g, '').replace(',', '.'));
+                    if(!isNaN(price) && price > 0.0001) return price;
+                }
+            }
+
+            throw new Error("Tüm hayalet kalkanlar denendi ancak İş Yatırım ve Topluluk API'sine ulaşılamadı.");
         }
 
         async function fetchAllTefasPrices() {
@@ -523,7 +517,7 @@
             }
 
             let btn = document.getElementById('tefas-update-btn');
-            if(btn) { btn.innerText = "⏳ V100 Derin Tarama..."; btn.disabled = true; }
+            if(btn) { btn.innerText = "⏳ Hayalet Mod Taraması..."; btn.disabled = true; }
 
             let count = 0;
             let errors = [];
@@ -548,11 +542,11 @@
 
                 if(count > 0) {
                     saveState(); renderView();
-                    let msg = `✅ Başarılı! ${count} adet fon (v100 CSR Bypass ile) güncellendi.`;
+                    let msg = `✅ Başarılı! ${count} adet fon (v101 Hayalet Mod ile) güncellendi.`;
                     if(errors.length > 0) msg += `\n⚠️ Çekilemeyen: ${errors.join(', ')}`;
                     alert(msg);
                 } else {
-                    alert(`⚠️ V100 Taraması Başarısız Oldu.\n\nHata Alınan Fonlar: ${errors.join(', ')}\n\nSon Hata Sebebi: ${lastDetailedError}\n\nNot: Eğer güvenlik duvarı geçici olarak kapatıldıysa lütfen 1 saat sonra tekrar deneyin veya 'Düzenle' butonundan manuel bakiye girin.`);
+                    alert(`⚠️ V101 Taraması Başarısız Oldu.\n\nHata Alınan Fonlar: ${errors.join(', ')}\n\nSon Hata Sebebi: ${lastDetailedError}`);
                 }
 
             } catch(e) {
@@ -846,7 +840,7 @@
             
             if(isNaN(maliyet)) {
                 try {
-                    if(btnEl) { btnEl.innerText = "⏳ V100 Ağında Aranıyor..."; btnEl.disabled = true; }
+                    if(btnEl) { btnEl.innerText = "⏳ Hayalet Ağda Aranıyor..."; btnEl.disabled = true; }
                     let foundPrice = await getPriceForFund(kod);
                     if(foundPrice && !isNaN(foundPrice)) {
                         maliyet = foundPrice;
