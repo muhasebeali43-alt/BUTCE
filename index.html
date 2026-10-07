@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - Tam Senkron v99 (Yenilmez Çoklu Kaynak Motoru)</title>
+    <title>CepteBütçe - v100 (WAF Bypass & Akıllı Tarama)</title>
     <!-- Cüzdan Simge -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     
@@ -19,7 +19,6 @@
         .bg-pattern { background-image: radial-gradient(rgba(204, 255, 0, 0.08) 1px, transparent 1px); background-size: 20px 20px; }
         .bg-fund-pattern { background-image: radial-gradient(rgba(139, 92, 246, 0.15) 1px, transparent 1px); background-size: 20px 20px; }
         .bg-tefas-pattern { background-image: radial-gradient(rgba(59, 130, 246, 0.15) 1px, transparent 1px); background-size: 20px 20px; }
-        .sticky-col { position: sticky; left: 0; z-index: 10; box-shadow: 2px 0 5px rgba(0,0,0,0.4); }
     </style>
 </head>
 <body class="flex justify-center items-center min-h-[100dvh] bg-[#0b0b0e] p-0 sm:p-4">
@@ -138,7 +137,7 @@
                     <input type="number" step="any" id="t-adet" placeholder="0" class="w-full bg-[#121215] border border-zinc-800 rounded-2xl p-3 text-white text-xs outline-none focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="text-[11px] text-zinc-400 font-semibold mb-1 block">Alış Maliyet Fiyatı (Birim ₺) <span class="text-zinc-500">(Boş bırakırsanız TEFAS'tan otomatik çekilir)</span></label>
+                    <label class="text-[11px] text-zinc-400 font-semibold mb-1 block">Alış Maliyet Fiyatı (Birim ₺) <span class="text-zinc-500">(Boş bırakılabilir)</span></label>
                     <input type="number" step="any" id="t-maliyet" placeholder="Boş bırakılabilir" class="w-full bg-[#121215] border border-zinc-800 rounded-2xl p-3 text-white text-xs outline-none focus:border-blue-500">
                 </div>
                 <button id="btn-save-tefas" onclick="saveTefasFon()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-2xl text-xs transition shadow-lg shadow-blue-500/20">Fonu Kaydet / Lot Ekle</button>
@@ -185,16 +184,14 @@
         </div>
     </div>
 
-    <!-- GEÇMİŞ FON HAREKETLERİ LİSTESİ MODALI -->
+    <!-- GEÇMİŞ LİSTESİ MODALI -->
     <div id="log-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center z-50 p-4">
         <div class="bg-[#18181c] w-full max-w-lg h-[520px] rounded-3xl border border-zinc-800 p-5 flex flex-col space-y-3 shadow-2xl">
             <div class="flex justify-between items-center">
                 <h3 class="text-base font-bold text-white">Fon / Bakiye Geçmişi</h3>
                 <button onclick="closeLogModal()" class="w-7 h-7 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white text-xs">✕</button>
             </div>
-            <div id="log-list" class="flex-1 overflow-y-auto no-scrollbar space-y-2 mt-2">
-                <!-- Fon bakiye güncellemeleri geçmişi buraya basılacak -->
-            </div>
+            <div id="log-list" class="flex-1 overflow-y-auto no-scrollbar space-y-2 mt-2"></div>
         </div>
     </div>
 
@@ -211,18 +208,15 @@
                 </div>
                 <button onclick="closeReportModal()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white text-xs transition">✕</button>
             </div>
-            
-            <div id="report-list" class="flex flex-col flex-1 overflow-y-auto no-scrollbar p-3 sm:p-5 space-y-6">
-                <!-- Javascript ile Excel benzeri tablolar basılacak -->
-            </div>
+            <div id="report-list" class="flex flex-col flex-1 overflow-y-auto no-scrollbar p-3 sm:p-5 space-y-6"></div>
         </div>
     </div>
 
-    <!-- JAVASCRIPT MOTORU VE UYGULAMA MANTIĞI -->
+    <!-- JAVASCRIPT MOTORU -->
     <script>
         // Veritabanı State Yönetimi
         let savedData = null;
-        const allPossibleKeys = ['cep_butce_excel_v99', 'cep_butce_excel_v98', 'cep_butce_excel_v97', 'cep_butce_excel_v96', 'cep_butce_excel_v95'];
+        const allPossibleKeys = ['cep_butce_excel_v100', 'cep_butce_excel_v99', 'cep_butce_excel_v98', 'cep_butce_excel_v97'];
         
         for (let k of allPossibleKeys) {
             let data = localStorage.getItem(k);
@@ -239,7 +233,7 @@
 
         let state = savedData || {
             transactions: [],
-            funds: { currentBalance: 769905, principal: 761167, history: [{ id: Date.now(), date: "2026-10-05", balance: 769905 }] },
+            funds: { currentBalance: 769905, principal: 761167, history: [] },
             tefasPortfoy: [],
             pin: "",
             lastUpdated: Date.now()
@@ -268,14 +262,12 @@
         const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
         const days = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
         
-        // Zaman Ayarı
-        const currentSystemDate = new Date("2026-10-06T16:42:00");
+        const currentSystemDate = new Date();
         let activeMonthIndex = currentSystemDate.getMonth();
         let activeYear = currentSystemDate.getFullYear();
         let currentTab = 'home';
         let activeModalType = 'Gelir';
         
-        // DÜZENLEME (EDIT) STATE'LERİ
         let editingTxId = null;
         let editingHistoryId = null;
         let editingTefasIndex = null;
@@ -333,7 +325,7 @@
                             state = cloudData;
                             if(!state.tefasPortfoy) state.tefasPortfoy = [];
                             if(!state.funds) state.funds = { currentBalance: 769905, principal: 761167, history: [] };
-                            localStorage.setItem('cep_butce_excel_v99', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v100', JSON.stringify(state));
                             checkLock();
                             renderView();
                         } else {
@@ -354,7 +346,7 @@
                             isSyncingFromCloud = true;
                             state = cloudData;
                             if(!state.tefasPortfoy) state.tefasPortfoy = [];
-                            localStorage.setItem('cep_butce_excel_v99', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v100', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -367,7 +359,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v99', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v100', JSON.stringify(state));
             if(db) db.collection("cepButce").doc("anaVeri").set(state).catch(e => {});
         }
 
@@ -391,16 +383,8 @@
         function getActiveMonthString() { return `${months[activeMonthIndex]} ${activeYear}`; }
         function updateMonthDisplay() { let el = document.getElementById('month-display'); if(el) el.innerText = getActiveMonthString(); }
 
-        function prevMonth() {
-            activeMonthIndex--;
-            if(activeMonthIndex < 0) { activeMonthIndex = 11; activeYear--; }
-            updateMonthDisplay(); renderView();
-        }
-        function nextMonth() {
-            activeMonthIndex++;
-            if(activeMonthIndex > 11) { activeMonthIndex = 0; activeYear++; }
-            updateMonthDisplay(); renderView();
-        }
+        function prevMonth() { activeMonthIndex--; if(activeMonthIndex < 0) { activeMonthIndex = 11; activeYear--; } updateMonthDisplay(); renderView(); }
+        function nextMonth() { activeMonthIndex++; if(activeMonthIndex > 11) { activeMonthIndex = 0; activeYear++; } updateMonthDisplay(); renderView(); }
 
         function changeTab(tab) {
             currentTab = tab;
@@ -452,9 +436,9 @@
         }
 
         // ==========================================
-        // V99: YENİ TEFAS + FINTABLES MULTI-SOURCE SCRAPER
+        // V100: KESİN ÇÖZÜM - CSR BYPASS VE AĞIR PROXY MOTORU
         // ==========================================
-        async function fetchWithTimeout(url, timeout = 7000) {
+        async function fetchWithTimeout(url, timeout = 7500) {
             const controller = new AbortController();
             const id = setTimeout(() => controller.abort(), timeout);
             try {
@@ -468,67 +452,68 @@
         }
 
         async function fetchHtml(targetUrl) {
+            // WAF engelini aşmak için en sağlam 3 proxy altyapısı (Raw formatta)
             let proxies = [
-                'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl),
+                'https://corsproxy.io/?' + encodeURIComponent(targetUrl),
+                'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl),
                 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(targetUrl)
             ];
             
             for (let proxy of proxies) {
                 try {
-                    let res = await fetchWithTimeout(proxy, 6000); 
-                    if (!res.ok) continue;
-                    
-                    if (proxy.includes('allorigins')) {
-                        let json = await res.json();
-                        if (json.contents) return json.contents;
-                    } else {
+                    let res = await fetchWithTimeout(proxy, 7500); 
+                    if (res.ok) {
                         let text = await res.text();
-                        if (text) return text;
+                        if (text && text.length > 500) return text;
                     }
                 } catch(e) {
-                    continue; 
+                    console.warn("Proxy engeli:", proxy);
                 }
             }
-            throw new Error("Tüm proxy servisleri başarısız.");
+            return null; // Tümü engellendiyse
         }
 
-        // AKILLI FİYAT BULUCU MOTOR
         async function getPriceForFund(kod) {
-            // Kullanıcının keşfettiği Yeni TEFAS Linki ve Yedek Fintables Sistemleri
             let sources = [
-                `https://www.tefas.gov.tr/tr/fon-detayli-analiz/${kod}`, // YENİ TEFAS
-                `https://fintables.com/fonlar/${kod}`,                 // YEDEK 1: Fintables
-                `https://www.yatirimdirekt.com/fonlar/${kod}`          // YEDEK 2: YatirimDirekt
+                `https://www.tefas.gov.tr/tr/fon-detayli-analiz/${kod}`, 
+                `https://fintables.com/fonlar/${kod}`,                 
+                `https://www.yatirimdirekt.com/fonlar/${kod}`          
             ];
 
+            let lastError = "";
             for(let sourceUrl of sources) {
-                try {
-                    let html = await fetchHtml(sourceUrl);
-                    if(!html) continue;
-                    
-                    // Script ve Stil taglarını silip temiz metne odaklanıyoruz
-                    let cleanHtml = html.replace(/<script [^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-                    
-                    // Önce "Fiyat" kelimesine yakın rakamı ara
-                    let regex = /(?:Fiyat|Son Fiyat|Fiyatı|Güncel|Değer|price)[\s\S]{0,150}?(\d{1,3}(?:\.\d{3})*,\d{2,6})/i;
-                    let match = cleanHtml.match(regex);
-                    let priceStr = match ? match[1] : null;
-                    
-                    if(!priceStr) {
-                        // Bulamazsa doğrudan metin içinde 4-6 ondalıklı tipik "Fon Sayısı" formatını ara
-                        let fallback = cleanHtml.match(/(\d{1,3}(?:\.\d{3})*,\d{4,6})/);
-                        if(fallback) priceStr = fallback[1];
-                    }
-                    
-                    if(priceStr) {
-                        let price = parseFloat(priceStr.replace(/\./g, '').replace(',', '.'));
-                        if(!isNaN(price) && price > 0) return price; // Başarılı, hemen dön!
-                    }
-                } catch(e) {
-                    // Bu site başarısız olduysa sessizce diğer siteye geç
+                let html = await fetchHtml(sourceUrl);
+                if(!html) {
+                    lastError = "Cloudflare Güvenlik Duvarı Proxy'yi engelledi.";
+                    continue;
                 }
+                
+                // DİKKAT: Artık scriptleri silmiyoruz, JSON verisini de tarıyoruz!
+                let regexes = [
+                    // Virgüllü Türk formatları
+                    /(?:Fiyat|Son Fiyat|Fiyatı|Güncel|Değer|price)[\s\S]{0,150}?(\d{1,3}(?:\.\d{3})*,\d{2,6})/i,
+                    />\s*(\d{1,3}(?:\.\d{3})*,\d{4,6})\s*</,
+                    /["'](\d{1,3}(?:\.\d{3})*,\d{4,6})["']/
+                ];
+                
+                for(let rx of regexes) {
+                    let match = html.match(rx);
+                    if(match && match[1]) {
+                        let price = parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+                        if(!isNaN(price) && price > 0.0001) return price;
+                    }
+                }
+                
+                // Noktalı ondalıklı JSON API formatları
+                let jsonMatch = html.match(/(?:price|lastPrice|fiyat|fiyati)["']?\s*:\s*["']?(\d+\.\d{2,6})/i);
+                if (jsonMatch) {
+                    let price = parseFloat(jsonMatch[1]);
+                    if(!isNaN(price) && price > 0.0001) return price;
+                }
+                
+                lastError = "Siteye erişildi ama yeni tasarımda fiyat satırı tespit edilemedi.";
             }
-            throw new Error("Fiyat bulunamadı");
+            throw new Error(lastError);
         }
 
         async function fetchAllTefasPrices() {
@@ -538,13 +523,13 @@
             }
 
             let btn = document.getElementById('tefas-update-btn');
-            if(btn) { btn.innerText = "⏳ Tüm Piyasalar Taranıyor..."; btn.disabled = true; }
+            if(btn) { btn.innerText = "⏳ V100 Derin Tarama..."; btn.disabled = true; }
 
             let count = 0;
             let errors = [];
+            let lastDetailedError = "";
 
             try {
-                // Tüm fonları aynı anda (paralel) 3 farklı kaynaktan arat
                 await Promise.all(state.tefasPortfoy.map(async (fon) => {
                     let kod = fon.kod.toUpperCase();
                     try {
@@ -556,22 +541,22 @@
                             errors.push(kod);
                         }
                     } catch(e) {
-                        errors.push(kod); 
+                        errors.push(kod);
+                        lastDetailedError = e.message;
                     }
                 }));
 
                 if(count > 0) {
-                    saveState();
-                    renderView();
-                    let msg = `✅ Başarılı! ${count} adet fon güncellendi. (Yeni TEFAS & Fintables Motoru)`;
-                    if(errors.length > 0) msg += `\n⚠️ Ulaşılamayan/Tatil olan fonlar: ${errors.join(', ')}`;
+                    saveState(); renderView();
+                    let msg = `✅ Başarılı! ${count} adet fon (v100 CSR Bypass ile) güncellendi.`;
+                    if(errors.length > 0) msg += `\n⚠️ Çekilemeyen: ${errors.join(', ')}`;
                     alert(msg);
                 } else {
-                    alert(`⚠️ Hiçbir veri çekilemedi.\n\nHata Alınan Fonlar: ${errors.join(', ')}\n\nMuhtemelen sunucular geçici olarak aşırı yüklü. Lütfen 5 dakika sonra tekrar deneyin.`);
+                    alert(`⚠️ V100 Taraması Başarısız Oldu.\n\nHata Alınan Fonlar: ${errors.join(', ')}\n\nSon Hata Sebebi: ${lastDetailedError}\n\nNot: Eğer güvenlik duvarı geçici olarak kapatıldıysa lütfen 1 saat sonra tekrar deneyin veya 'Düzenle' butonundan manuel bakiye girin.`);
                 }
 
             } catch(e) {
-                alert("⚠️ Beklenmeyen bir ağ hatası oluştu.");
+                alert("Beklenmeyen Hata: " + e.message);
             } finally {
                 if(btn) { btn.innerText = "🔄 Fiyatları Çek"; btn.disabled = false; }
             }
@@ -587,7 +572,6 @@
             let fin = calculateMonthFinancials(activeMonthStr);
             let monthTx = state.transactions.filter(t => t.date === activeMonthStr);
 
-            // KAR ZARAR VE ANAPARA HESAPLAMASI
             let allEvents = [];
             (state.funds.history || []).forEach(h => allEvents.push({ type: 'update', time: h.id, val: h.balance }));
             (state.transactions || []).filter(t => t.category === 'Fon Yatırımı' || t.category === 'Fondan Çek').forEach(t => {
@@ -860,18 +844,18 @@
             
             let btnEl = document.getElementById('btn-save-tefas');
             
-            // Eğer maliyet boşsa YENİ MOTORLA çek
             if(isNaN(maliyet)) {
                 try {
-                    if(btnEl) { btnEl.innerText = "⏳ Fiyat Aranıyor..."; btnEl.disabled = true; }
+                    if(btnEl) { btnEl.innerText = "⏳ V100 Ağında Aranıyor..."; btnEl.disabled = true; }
                     let foundPrice = await getPriceForFund(kod);
                     if(foundPrice && !isNaN(foundPrice)) {
                         maliyet = foundPrice;
                     }
-                } catch(e){}
+                } catch(e){
+                    alert("Ağ hatası: " + e.message);
+                }
                 
                 if(isNaN(maliyet)) {
-                    alert(`⚠️ ${kod} için fiyat bulunamadı. Lütfen 'Alış Maliyet Fiyatını' elinizle doldurun.`);
                     if(btnEl) { btnEl.innerText = "Fonu Kaydet / Lot Ekle"; btnEl.disabled = false; }
                     return; 
                 }
@@ -901,7 +885,6 @@
 
         function deleteTefasFon(index) { if(confirm("Bu fon silinsin mi?")) { state.tefasPortfoy.splice(index, 1); saveState(); renderView(); } }
 
-        // Normal Gider/Gelir İşlemleri
         function openModal(type) {
             editingTxId = null;
             activeModalType = type;
@@ -951,7 +934,6 @@
 
         function deleteTx(id) { if(confirm("Silinsin mi?")) { state.transactions = state.transactions.filter(t => t.id !== id); saveState(); renderView(); } }
         
-        // Fon Geçmişi İşlemleri
         function editHistory(id) {
             let h = state.funds.history.find(x => x.id === id);
             if(!h) return;
@@ -994,10 +976,7 @@
             if(dt && !isNaN(amt)) {
                 if(editingHistoryId) {
                     let h = state.funds.history.find(x => x.id === editingHistoryId);
-                    if(h) {
-                        h.date = dt;
-                        h.balance = amt;
-                    }
+                    if(h) { h.date = dt; h.balance = amt; }
                     editingHistoryId = null;
                 } else {
                     state.funds.history.push({ id: Date.now(), date: dt, balance: amt });
@@ -1021,7 +1000,6 @@
         }
         function closeLogModal() { document.getElementById('log-modal').style.display = 'none'; }
 
-        // Excel Raporu Çizimi
         function openReportModal() {
             let chronoMonths = getChronologicalMonths();
             let listEl = document.getElementById('report-list');
