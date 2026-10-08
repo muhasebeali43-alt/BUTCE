@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - v101 (Hayalet Mod & Anti-Cloudflare)</title>
+    <title>CepteBütçe - v102 (Anti-Ban & Sıralı Tarama)</title>
     <!-- Cüzdan Simge -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     
@@ -216,7 +216,7 @@
     <script>
         // Veritabanı State Yönetimi
         let savedData = null;
-        const allPossibleKeys = ['cep_butce_excel_v101', 'cep_butce_excel_v100', 'cep_butce_excel_v99', 'cep_butce_excel_v98', 'cep_butce_excel_v97'];
+        const allPossibleKeys = ['cep_butce_excel_v102', 'cep_butce_excel_v101', 'cep_butce_excel_v100', 'cep_butce_excel_v99', 'cep_butce_excel_v98'];
         
         for (let k of allPossibleKeys) {
             let data = localStorage.getItem(k);
@@ -325,7 +325,7 @@
                             state = cloudData;
                             if(!state.tefasPortfoy) state.tefasPortfoy = [];
                             if(!state.funds) state.funds = { currentBalance: 769905, principal: 761167, history: [] };
-                            localStorage.setItem('cep_butce_excel_v101', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v102', JSON.stringify(state));
                             checkLock();
                             renderView();
                         } else {
@@ -346,7 +346,7 @@
                             isSyncingFromCloud = true;
                             state = cloudData;
                             if(!state.tefasPortfoy) state.tefasPortfoy = [];
-                            localStorage.setItem('cep_butce_excel_v101', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v102', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -359,7 +359,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v101', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v102', JSON.stringify(state));
             if(db) db.collection("cepButce").doc("anaVeri").set(state).catch(e => {});
         }
 
@@ -436,8 +436,10 @@
         }
 
         // ==========================================
-        // V101: HAYALET MOD (ANTI-CLOUDFLARE)
+        // V102: ANTI-BAN (SIRALI ÇEKİM) MODU
         // ==========================================
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
         async function fetchWithTimeout(url, timeout = 7500) {
             const controller = new AbortController();
             const id = setTimeout(() => controller.abort(), timeout);
@@ -453,14 +455,13 @@
 
         async function fetchHtml(targetUrl) {
             let proxies = [
-                'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl),
-                'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(targetUrl),
-                'https://corsproxy.io/?' + encodeURIComponent(targetUrl)
+                url => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
+                url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
             ];
             
-            for (let proxy of proxies) {
+            for (let proxyFn of proxies) {
                 try {
-                    let res = await fetchWithTimeout(proxy, 6000); 
+                    let res = await fetchWithTimeout(proxyFn(targetUrl), 7000); 
                     if (res.ok) {
                         let text = await res.text();
                         if (text && text.length > 500) return text;
@@ -473,7 +474,7 @@
         async function getPriceForFund(kod) {
             kod = kod.toUpperCase();
             
-            // KAPI 1: Açık Kaynak Topluluk API'si (En hızlısı, engelsiz)
+            // KAPI 1: Açık Kaynak Topluluk API'si
             try {
                 let apiRes = await fetchWithTimeout("https://www.hasanadiguzel.com.tr/api/tefas", 4000);
                 if(apiRes.ok) {
@@ -485,7 +486,7 @@
                 }
             } catch(e) {}
 
-            // KAPI 2: İş Yatırım (Güvenlik duvarı zayıf, tüm fonlar var)
+            // KAPI 2: İş Yatırım
             let isYatirimUrl = "https://www.isyatirim.com.tr/tr-tr/analiz/fon/Sayfalar/fon-detay.aspx?fonkod=" + kod;
             let isYatirimHtml = await fetchHtml(isYatirimUrl);
             if(isYatirimHtml) {
@@ -496,7 +497,7 @@
                 }
             }
 
-            // KAPI 3: Orijinal TEFAS (Son çare)
+            // KAPI 3: Orijinal TEFAS
             let tefasUrl = "https://www.tefas.gov.tr/tr/fon-detayli-analiz/" + kod;
             let tefasHtml = await fetchHtml(tefasUrl);
             if(tefasHtml) {
@@ -507,7 +508,7 @@
                 }
             }
 
-            throw new Error("Tüm hayalet kalkanlar denendi ancak İş Yatırım ve Topluluk API'sine ulaşılamadı.");
+            throw new Error("Tüm kaynaklar engellendi.");
         }
 
         async function fetchAllTefasPrices() {
@@ -517,15 +518,21 @@
             }
 
             let btn = document.getElementById('tefas-update-btn');
-            if(btn) { btn.innerText = "⏳ Hayalet Mod Taraması..."; btn.disabled = true; }
+            if(btn) { btn.disabled = true; }
 
             let count = 0;
             let errors = [];
             let lastDetailedError = "";
 
             try {
-                await Promise.all(state.tefasPortfoy.map(async (fon) => {
+                // V102 DEĞİŞİKLİĞİ: Promise.all (Eşzamanlı) iptal edildi.
+                // Artık tek tek sırayla çekecek ve aralarda bilerek bekleyecek.
+                for (let i = 0; i < state.tefasPortfoy.length; i++) {
+                    let fon = state.tefasPortfoy[i];
                     let kod = fon.kod.toUpperCase();
+                    
+                    if(btn) { btn.innerText = `⏳ [${i+1}/${state.tefasPortfoy.length}] ${kod} Çekiliyor...`; }
+                    
                     try {
                         let price = await getPriceForFund(kod);
                         if(price && !isNaN(price)) {
@@ -538,15 +545,20 @@
                         errors.push(kod);
                         lastDetailedError = e.message;
                     }
-                }));
+                    
+                    // Proxy sunucular bizi banlamasın diye her fondan sonra 1.5 saniye dinleniyoruz (Anti-Ban)
+                    if (i < state.tefasPortfoy.length - 1) {
+                        await sleep(1500); 
+                    }
+                }
 
                 if(count > 0) {
                     saveState(); renderView();
-                    let msg = `✅ Başarılı! ${count} adet fon (v101 Hayalet Mod ile) güncellendi.`;
+                    let msg = `✅ Başarılı! ${count} adet fon (v102 Sıralı Sistem ile) güncellendi.`;
                     if(errors.length > 0) msg += `\n⚠️ Çekilemeyen: ${errors.join(', ')}`;
                     alert(msg);
                 } else {
-                    alert(`⚠️ V101 Taraması Başarısız Oldu.\n\nHata Alınan Fonlar: ${errors.join(', ')}\n\nSon Hata Sebebi: ${lastDetailedError}`);
+                    alert(`⚠️ V102 Taraması Başarısız Oldu.\n\nHata Alınan Fonlar: ${errors.join(', ')}\n\nSebep: ${lastDetailedError}`);
                 }
 
             } catch(e) {
@@ -840,7 +852,7 @@
             
             if(isNaN(maliyet)) {
                 try {
-                    if(btnEl) { btnEl.innerText = "⏳ Hayalet Ağda Aranıyor..."; btnEl.disabled = true; }
+                    if(btnEl) { btnEl.innerText = "⏳ V102 Ağında Aranıyor..."; btnEl.disabled = true; }
                     let foundPrice = await getPriceForFund(kod);
                     if(foundPrice && !isNaN(foundPrice)) {
                         maliyet = foundPrice;
