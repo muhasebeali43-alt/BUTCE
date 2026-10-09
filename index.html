@@ -438,12 +438,7 @@
         // ==========================================
         // V104: GOOGLE SUNUCU MODU (Kesin Çözüm)
         // ==========================================
-        
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // DİKKAT: GOOGLE APPS SCRIPT URL'Nİ BURAYA YAPIŞTIR
-        // Örnek: "https://script.google.com/macros/s/AKfyc.../exec"
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        const GOOGLE_API_URL = "BURAYA_YAPISTIR"; 
+        const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbzaLxEZSerm-2JxBa0fA0xQfeSHeEXkpwtRQvTFNKN_DdoUp9Gv8Lksxy8QnANS3xq4mg/exec"; 
         
         const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -461,10 +456,6 @@
         }
 
         async function getPriceForFund(kod) {
-            if (GOOGLE_API_URL === "BURAYA_YAPISTIR" || GOOGLE_API_URL === "") {
-                throw new Error("Lütfen Google Apps Script URL'sini kodun içine yapıştırın!");
-            }
-
             try {
                 let response = await fetchWithTimeout(GOOGLE_API_URL + "?kod=" + kod, 9000);
                 let json = await response.json();
@@ -475,7 +466,7 @@
                     throw new Error(json.error || "Fiyat okunamadı.");
                 }
             } catch (err) {
-                throw new Error("Google Sunucusuna bağlanılamadı. Linki doğru yapıştırdığından emin ol.");
+                throw new Error("Google Sunucusuna bağlanılamadı.");
             }
         }
 
@@ -512,7 +503,6 @@
                         lastDetailedError = e.message;
                     }
                     
-                    // Google sunucularını yormamak için kısa bekleme
                     if (i < state.tefasPortfoy.length - 1) { await sleep(1000); }
                 }
 
