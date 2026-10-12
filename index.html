@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - v105 (Google Tam Sürüm)</title>
+    <title>CepteBütçe - v105 (Google Tam Sürüm 2)</title>
     <!-- Cüzdan Simge -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     
@@ -438,7 +438,7 @@
         // V105: GOOGLE SUNUCU MODU (GELİŞMİŞ YAKALAMA)
         // ==========================================
         
-        // SENİN VERDİĞİN DOĞRU LİNK BURADA!
+        // SENİN VERDİĞİN LİNK BURAYA EKLENDİ:
         const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbwAIygT-dss2IRXfmzjau9629BhFjKV4kWMAqGODpRufVP_UOTwO9trvrwn4IXOXPM_kg/exec"; 
         
         const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -461,6 +461,10 @@
         }
 
         async function getPriceForFund(kod) {
+             if (GOOGLE_API_URL === "BURAYA_KOPYALADIGIN_URL_GELECEK" || GOOGLE_API_URL === "") {
+                throw new Error("Lütfen Apps Script Linkini kod içine yapıştırın!");
+            }
+
             try {
                 let response = await fetchWithTimeout(GOOGLE_API_URL + "?kod=" + kod, 9000);
                 let text = await response.text(); 
@@ -474,7 +478,7 @@
                     }
                 } catch (parseError) {
                     console.error("Gelen yanıt JSON değil:", text.substring(0, 200));
-                    throw new Error("Lütfen Apps Script kodunu kaydedip 'Yeni Sürüm' olarak dağıttığınıza emin olun.");
+                    throw new Error("Lütfen Apps Script kodunu kaydedip 'Yeni Sürüm' olarak dağıttığınıza emin olun. Link doğru ama kod yanlış bağlanıyor.");
                 }
             } catch (err) {
                 throw new Error(err.message || "Bağlantı koptu.");
