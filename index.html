@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CepteBütçe - v104 (Google Backend Modu)</title>
+    <title>CepteBütçe - v105 (Google Tam Sürüm)</title>
     <!-- Cüzdan Simge -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 4h10v3H7z' fill='%2381c784' stroke='%232c2c2c' stroke-width='1.5'/><rect x='3' y='7' width='18' height='14' rx='3' fill='%23a0522d' stroke='%232c2c2c' stroke-width='1.5'/><path d='M17 11h4v6h-4z' fill='%238b4513' stroke='%232c2c2c' stroke-width='1.5'/><circle cx='19' cy='14' r='1' fill='%23ffd700'/></svg>">
     
@@ -112,7 +112,6 @@
                 <div>
                     <label class="text-[11px] text-zinc-400 font-semibold mb-1 block">Kategori / Tür</label>
                     <select id="m-cat" class="w-full bg-[#121215] border border-zinc-800 rounded-2xl p-3 text-white text-xs outline-none focus:border-[#ccff00]">
-                        <!-- Dinamik doldurulacak -->
                     </select>
                 </div>
                 <button onclick="saveModalData()" class="w-full bg-[#ccff00] hover:bg-[#b3e600] text-black font-bold py-3.5 rounded-2xl text-xs transition shadow-lg shadow-[#ccff00]/10">Kaydet</button>
@@ -216,7 +215,7 @@
     <script>
         // Veritabanı State Yönetimi
         let savedData = null;
-        const allPossibleKeys = ['cep_butce_excel_v104', 'cep_butce_excel_v103', 'cep_butce_excel_v102', 'cep_butce_excel_v101', 'cep_butce_excel_v100'];
+        const allPossibleKeys = ['cep_butce_excel_v105', 'cep_butce_excel_v104', 'cep_butce_excel_v103', 'cep_butce_excel_v102', 'cep_butce_excel_v101'];
         
         for (let k of allPossibleKeys) {
             let data = localStorage.getItem(k);
@@ -325,7 +324,7 @@
                             state = cloudData;
                             if(!state.tefasPortfoy) state.tefasPortfoy = [];
                             if(!state.funds) state.funds = { currentBalance: 769905, principal: 761167, history: [] };
-                            localStorage.setItem('cep_butce_excel_v104', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v105', JSON.stringify(state));
                             checkLock();
                             renderView();
                         } else {
@@ -346,7 +345,7 @@
                             isSyncingFromCloud = true;
                             state = cloudData;
                             if(!state.tefasPortfoy) state.tefasPortfoy = [];
-                            localStorage.setItem('cep_butce_excel_v104', JSON.stringify(state));
+                            localStorage.setItem('cep_butce_excel_v105', JSON.stringify(state));
                             checkLock();
                             renderView();
                             isSyncingFromCloud = false;
@@ -359,7 +358,7 @@
         function saveState() {
             if(isSyncingFromCloud) return;
             state.lastUpdated = Date.now();
-            localStorage.setItem('cep_butce_excel_v104', JSON.stringify(state));
+            localStorage.setItem('cep_butce_excel_v105', JSON.stringify(state));
             if(db) db.collection("cepButce").doc("anaVeri").set(state).catch(e => {});
         }
 
@@ -436,9 +435,11 @@
         }
 
         // ==========================================
-        // V104: GOOGLE SUNUCU MODU (Kesin Çözüm)
+        // V105: GOOGLE SUNUCU MODU (GELİŞMİŞ YAKALAMA)
         // ==========================================
-        const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbzaLxEZSerm-2JxBa0fA0xQfeSHeEXkpwtRQvTFNKN_DdoUp9Gv8Lksxy8QnANS3xq4mg/exec"; 
+        
+        // SENİN VERDİĞİN DOĞRU LİNK BURADA!
+        const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbwAIygT-dss2IRXfmzjau9629BhFjKV4kWMAqGODpRufVP_UOTwO9trvrwn4IXOXPM_kg/exec"; 
         
         const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -446,7 +447,11 @@
             const controller = new AbortController();
             const id = setTimeout(() => controller.abort(), timeout);
             try {
-                const response = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+                const response = await fetch(url, { 
+                    signal: controller.signal, 
+                    cache: 'no-store',
+                    redirect: 'follow' 
+                });
                 clearTimeout(id);
                 return response;
             } catch (err) {
@@ -458,15 +463,21 @@
         async function getPriceForFund(kod) {
             try {
                 let response = await fetchWithTimeout(GOOGLE_API_URL + "?kod=" + kod, 9000);
-                let json = await response.json();
+                let text = await response.text(); 
 
-                if (json.fiyat) {
-                    return json.fiyat;
-                } else {
-                    throw new Error(json.error || "Fiyat okunamadı.");
+                try {
+                    let json = JSON.parse(text);
+                    if (json.fiyat) {
+                        return json.fiyat;
+                    } else {
+                        throw new Error(json.error || "Fiyat okunamadı.");
+                    }
+                } catch (parseError) {
+                    console.error("Gelen yanıt JSON değil:", text.substring(0, 200));
+                    throw new Error("Lütfen Apps Script kodunu kaydedip 'Yeni Sürüm' olarak dağıttığınıza emin olun.");
                 }
             } catch (err) {
-                throw new Error("Google Sunucusuna bağlanılamadı.");
+                throw new Error(err.message || "Bağlantı koptu.");
             }
         }
 
@@ -488,7 +499,7 @@
                     let fon = state.tefasPortfoy[i];
                     let kod = fon.kod.toUpperCase();
                     
-                    if(btn) { btn.innerText = `⏳ [${i+1}/${state.tefasPortfoy.length}] ${kod} (Google Modu)...`; }
+                    if(btn) { btn.innerText = `⏳ [${i+1}/${state.tefasPortfoy.length}] ${kod} (v105)...`; }
                     
                     try {
                         let price = await getPriceForFund(kod);
@@ -508,11 +519,11 @@
 
                 if(count > 0) {
                     saveState(); renderView();
-                    let msg = `✅ Başarılı! ${count} adet fon (v104 Google Sunucu Mimarisi ile) güncellendi.`;
+                    let msg = `✅ Başarılı! ${count} adet fon güncellendi.`;
                     if(errors.length > 0) msg += `\n⚠️ Çekilemeyen: ${errors.join(', ')}`;
                     alert(msg);
                 } else {
-                    alert(`⚠️ V104 Taraması Başarısız Oldu.\n\nHata Alınan Fonlar: ${errors.join(', ')}\n\nSebep: ${lastDetailedError}`);
+                    alert(`⚠️ Taraması Başarısız Oldu.\n\nHata Alınan Fonlar: ${errors.join(', ')}\n\nSebep: ${lastDetailedError}`);
                 }
 
             } catch(e) {
@@ -631,7 +642,7 @@
                         <div class="flex justify-between items-center px-1">
                             <div>
                                 <h2 class="text-base sm:text-lg font-bold text-white flex items-center space-x-2"><span>🌐 TEFAS Akıllı Fon Portföyü</span></h2>
-                                <p class="text-[10px] text-zinc-400 mt-0.5">Fiyatlar artık dev Google sunucularından çekilir.</p>
+                                <p class="text-[10px] text-zinc-400 mt-0.5">Fiyatlar Google sunucularından çekilir.</p>
                             </div>
                             <div class="flex space-x-2">
                                 <button onclick="fetchAllTefasPrices()" id="tefas-update-btn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-2.5 rounded-xl text-xs transition shadow-lg shadow-emerald-500/20">🔄 Fiyatları Çek</button>
@@ -806,13 +817,13 @@
             
             if(isNaN(maliyet)) {
                 try {
-                    if(btnEl) { btnEl.innerText = "⏳ V104 Ağında Aranıyor..."; btnEl.disabled = true; }
+                    if(btnEl) { btnEl.innerText = "⏳ Ağda Aranıyor..."; btnEl.disabled = true; }
                     let foundPrice = await getPriceForFund(kod);
                     if(foundPrice && !isNaN(foundPrice)) {
                         maliyet = foundPrice;
                     }
                 } catch(e){
-                    alert("Ağ hatası: " + e.message);
+                    alert("Hata: " + e.message);
                 }
                 
                 if(isNaN(maliyet)) {
